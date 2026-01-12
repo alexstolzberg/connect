@@ -2,6 +2,11 @@ package com.stolz.connect.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+// Modern color scheme for Connect app
+val ConnectPrimary = Color(0xFF6366F1) // Indigo
+val ConnectSecondary = Color(0xFF8B5CF6) // Purple
+val ConnectTertiary = Color(0xFFEC4899) // Pink
+
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
 val Pink80 = Color(0xFFEFB8C8)

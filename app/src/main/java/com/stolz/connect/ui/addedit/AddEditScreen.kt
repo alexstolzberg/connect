@@ -16,6 +16,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stolz.connect.domain.model.ConnectionMethod
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import com.stolz.connect.platform.PermissionHelper
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -222,6 +226,62 @@ fun AddEditScreen(
                     onClick = { viewModel.updatePreferredMethod(ConnectionMethod.BOTH) },
                     label = { Text("Both") }
                 )
+            }
+            
+            // Birthday (optional)
+            var showDatePicker by remember { mutableStateOf(false) }
+            
+            Text("Birthday (optional)", style = MaterialTheme.typography.labelLarge)
+            if (uiState.birthday != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(uiState.birthday),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    TextButton(onClick = { viewModel.updateBirthday(null) }) {
+                        Text("Clear")
+                    }
+                }
+            } else {
+                OutlinedButton(
+                    onClick = { showDatePicker = true },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Set Birthday")
+                }
+            }
+            
+            // Date picker dialog
+            if (showDatePicker) {
+                val datePickerState = rememberDatePickerState(
+                    initialSelectedDateMillis = uiState.birthday?.time
+                )
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                datePickerState.selectedDateMillis?.let {
+                                    viewModel.updateBirthday(Date(it))
+                                }
+                                showDatePicker = false
+                            }
+                        ) {
+                            Text("OK")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePicker = false }) {
+                            Text("Cancel")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerState)
+                }
             }
             
             // Notes

@@ -108,7 +108,8 @@ fun AllScreen(
                         onCallClick = { handleCallClick(connection.contactPhoneNumber) },
                         onMessageClick = {
                             ContactHelper.sendMessage(context, connection.contactPhoneNumber)
-                        }
+                        },
+                        onMarkComplete = { viewModel.markAsContacted(connection) }
                     )
                 }
             }

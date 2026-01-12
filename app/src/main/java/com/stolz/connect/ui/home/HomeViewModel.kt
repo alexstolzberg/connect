@@ -65,6 +65,12 @@ class HomeViewModel @Inject constructor(
             connectionRepository.deleteConnection(connection)
         }
     }
+    
+    fun markAsContacted(connection: ScheduledConnection) {
+        viewModelScope.launch {
+            connectionRepository.markAsContacted(connection)
+        }
+    }
 }
 
 data class HomeUiState(

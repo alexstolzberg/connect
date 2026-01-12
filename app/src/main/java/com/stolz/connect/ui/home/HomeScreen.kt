@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -23,7 +24,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.graphics.Color
 import com.stolz.connect.platform.ContactHelper
+import com.stolz.connect.util.ContactColorCategory
+import com.stolz.connect.util.TimeFormatter
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -110,6 +114,9 @@ fun HomeScreen(
                     onCallClick = ::handleCallClick,
                     onMessageClick = { phoneNumber ->
                         ContactHelper.sendMessage(context, phoneNumber)
+                    },
+                    onMarkComplete = { connection ->
+                        viewModel.markAsContacted(connection)
                     }
                 )
                 1 -> AllTab(
@@ -118,6 +125,9 @@ fun HomeScreen(
                     onCallClick = ::handleCallClick,
                     onMessageClick = { phoneNumber ->
                         ContactHelper.sendMessage(context, phoneNumber)
+                    },
+                    onMarkComplete = { connection ->
+                        viewModel.markAsContacted(connection)
                     }
                 )
             }
@@ -130,7 +140,8 @@ fun TodayTab(
     connections: List<com.stolz.connect.domain.model.ScheduledConnection>,
     onConnectionClick: (Long) -> Unit,
     onCallClick: (String) -> Unit,
-    onMessageClick: (String) -> Unit
+    onMessageClick: (String) -> Unit,
+    onMarkComplete: (com.stolz.connect.domain.model.ScheduledConnection) -> Unit
 ) {
     if (connections.isEmpty()) {
         Box(
@@ -154,15 +165,16 @@ fun TodayTab(
             items(
                 items = connections,
                 key = { it.id }
-            ) { connection ->
-                ConnectionItem(
-                    connection = connection,
-                    isHighlighted = true,
-                    onClick = { onConnectionClick(connection.id) },
-                    onCallClick = { onCallClick(connection.contactPhoneNumber) },
-                    onMessageClick = { onMessageClick(connection.contactPhoneNumber) }
-                )
-            }
+                ) { connection ->
+                    ConnectionItem(
+                        connection = connection,
+                        isHighlighted = true,
+                        onClick = { onConnectionClick(connection.id) },
+                        onCallClick = { onCallClick(connection.contactPhoneNumber) },
+                        onMessageClick = { onMessageClick(connection.contactPhoneNumber) },
+                        onMarkComplete = { onMarkComplete(connection) }
+                    )
+                }
         }
     }
 }
@@ -172,7 +184,8 @@ fun AllTab(
     connections: List<com.stolz.connect.domain.model.ScheduledConnection>,
     onConnectionClick: (Long) -> Unit,
     onCallClick: (String) -> Unit,
-    onMessageClick: (String) -> Unit
+    onMessageClick: (String) -> Unit,
+    onMarkComplete: (com.stolz.connect.domain.model.ScheduledConnection) -> Unit
 ) {
     if (connections.isEmpty()) {
         Box(
@@ -196,15 +209,16 @@ fun AllTab(
             items(
                 items = connections,
                 key = { it.id }
-            ) { connection ->
-                ConnectionItem(
-                    connection = connection,
-                    isHighlighted = connection.isDueToday,
-                    onClick = { onConnectionClick(connection.id) },
-                    onCallClick = { onCallClick(connection.contactPhoneNumber) },
-                    onMessageClick = { onMessageClick(connection.contactPhoneNumber) }
-                )
-            }
+                ) { connection ->
+                    ConnectionItem(
+                        connection = connection,
+                        isHighlighted = connection.isDueToday,
+                        onClick = { onConnectionClick(connection.id) },
+                        onCallClick = { onCallClick(connection.contactPhoneNumber) },
+                        onMessageClick = { onMessageClick(connection.contactPhoneNumber) },
+                        onMarkComplete = { onMarkComplete(connection) }
+                    )
+                }
         }
     }
 }
@@ -215,10 +229,23 @@ fun ConnectionItem(
     isHighlighted: Boolean,
     onClick: () -> Unit,
     onCallClick: () -> Unit,
-    onMessageClick: () -> Unit
+    onMessageClick: () -> Unit,
+    onMarkComplete: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-    val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    
+    // Get color category based on last contacted date
+    val colorCategory = TimeFormatter.getLastContactedColorCategory(
+        connection.lastContactedDate,
+        connection.reminderFrequencyDays
+    )
+    
+    // Determine border/indicator color
+    val indicatorColor = when (colorCategory) {
+        ContactColorCategory.GREEN -> Color(0xFF4CAF50) // Green
+        ContactColorCategory.YELLOW -> Color(0xFFFFC107) // Yellow/Amber
+        ContactColorCategory.RED -> Color(0xFFF44336) // Red
+    }
     
     Card(
         modifier = Modifier
@@ -230,6 +257,10 @@ fun ConnectionItem(
             } else {
                 MaterialTheme.colorScheme.surface
             }
+        ),
+        border = androidx.compose.foundation.BorderStroke(
+            width = 2.dp,
+            color = indicatorColor.copy(alpha = 0.6f)
         )
     ) {
         Column(
@@ -238,7 +269,7 @@ fun ConnectionItem(
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
@@ -246,47 +277,111 @@ fun ConnectionItem(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = connection.contactPhoneNumber,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Next: ${dateFormat.format(connection.nextReminderDate)}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (connection.lastContactedDate != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Next reminder
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
                         Text(
-                            text = "Last: ${dateFormat.format(connection.lastContactedDate)}",
+                            text = "Next:",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = dateFormat.format(connection.nextReminderDate),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                    
+                    // Last contacted with relative time
+                    if (connection.lastContactedDate != null) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Last:",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = TimeFormatter.formatRelativeTime(connection.lastContactedDate),
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Medium,
+                                color = indicatorColor
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Never contacted",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
                         )
                     }
                 }
                 
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                // Action buttons column
+                Column(
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
-                        connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
-                    ) {
-                        IconButton(onClick = onCallClick) {
+                    // Mark complete button (if due today)
+                    if (connection.isDueToday) {
+                        IconButton(
+                            onClick = onMarkComplete,
+                            modifier = Modifier.size(40.dp)
+                        ) {
                             Icon(
-                                imageVector = Icons.Default.Phone,
-                                contentDescription = "Call"
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Mark as Contacted",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
-                    if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
-                        connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                    
+                    // Call and Message buttons
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        IconButton(onClick = onMessageClick) {
-                            Icon(
-                                imageVector = Icons.Default.Send,
-                                contentDescription = "Message"
-                            )
+                        if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
+                            connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                        ) {
+                            IconButton(
+                                onClick = onCallClick,
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Phone,
+                                    contentDescription = "Call",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
+                            connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                        ) {
+                            IconButton(
+                                onClick = onMessageClick,
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Send,
+                                    contentDescription = "Message",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                 }

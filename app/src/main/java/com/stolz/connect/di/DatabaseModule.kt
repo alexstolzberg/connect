@@ -23,7 +23,9 @@ object DatabaseModule {
             context,
             ConnectDatabase::class.java,
             "connect_database"
-        ).build()
+        )
+        .fallbackToDestructiveMigration() // For development - remove in production and add proper migrations
+        .build()
     }
     
     @Provides

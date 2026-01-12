@@ -13,6 +13,7 @@ data class ScheduledConnection(
     val lastContactedDate: Date? = null,
     val nextReminderDate: Date,
     val notes: String? = null,
+    val birthday: Date? = null, // Optional birthday for birthday reminders
     val createdAt: Date = Date(),
     val isActive: Boolean = true
 ) {

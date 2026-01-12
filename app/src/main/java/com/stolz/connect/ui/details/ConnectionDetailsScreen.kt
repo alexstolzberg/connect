@@ -22,7 +22,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.graphics.Color
 import com.stolz.connect.platform.ContactHelper
+import com.stolz.connect.util.ContactColorCategory
+import com.stolz.connect.util.TimeFormatter
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -129,7 +132,17 @@ fun ConnectionDetailsScreen(
             is ConnectionDetailsUiState.Success -> {
                 val connection = state.connection
                 val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-                val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+                
+                // Get color category for visual indicator
+                val colorCategory = TimeFormatter.getLastContactedColorCategory(
+                    connection.lastContactedDate,
+                    connection.reminderFrequencyDays
+                )
+                val indicatorColor = when (colorCategory) {
+                    ContactColorCategory.GREEN -> Color(0xFF4CAF50)
+                    ContactColorCategory.YELLOW -> Color(0xFFFFC107)
+                    ContactColorCategory.RED -> Color(0xFFF44336)
+                }
                 
                 Column(
                     modifier = Modifier
@@ -139,7 +152,11 @@ fun ConnectionDetailsScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Card(
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        border = androidx.compose.foundation.BorderStroke(
+                            width = 3.dp,
+                            color = indicatorColor.copy(alpha = 0.7f)
+                        )
                     ) {
                         Column(
                             modifier = Modifier.padding(16.dp),
@@ -159,15 +176,50 @@ fun ConnectionDetailsScreen(
                             Divider()
                             
                             InfoRow("Frequency", "${connection.reminderFrequencyDays} days")
-                            InfoRow("Method", connection.preferredMethod.name.lowercase().capitalize())
+                            InfoRow("Method", connection.preferredMethod.name.lowercase().replaceFirstChar { it.uppercaseChar() })
                             InfoRow(
                                 "Next Reminder",
                                 dateFormat.format(connection.nextReminderDate)
                             )
                             if (connection.lastContactedDate != null) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = "Last Contacted",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = TimeFormatter.formatRelativeTime(connection.lastContactedDate),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontWeight = FontWeight.Medium,
+                                            color = indicatorColor
+                                        )
+                                        Text(
+                                            text = "(${dateFormat.format(connection.lastContactedDate)})",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
+                            } else {
                                 InfoRow(
                                     "Last Contacted",
-                                    dateFormat.format(connection.lastContactedDate)
+                                    "Never",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                            if (connection.birthday != null) {
+                                Divider()
+                                InfoRow(
+                                    "Birthday",
+                                    dateFormat.format(connection.birthday)
                                 )
                             }
                             if (connection.notes != null && connection.notes.isNotBlank()) {
@@ -270,7 +322,7 @@ fun ConnectionDetailsScreen(
 }
 
 @Composable
-fun InfoRow(label: String, value: String) {
+fun InfoRow(label: String, value: String, color: Color? = null) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -283,7 +335,8 @@ fun InfoRow(label: String, value: String) {
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = color ?: MaterialTheme.colorScheme.onSurface
         )
     }
 }

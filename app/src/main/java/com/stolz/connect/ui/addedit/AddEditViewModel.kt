@@ -30,7 +30,8 @@ class AddEditViewModel @Inject constructor(
             reminderFrequencyDays = 7,
             preferredMethod = ConnectionMethod.BOTH,
             reminderTime = null,
-            notes = null
+            notes = null,
+            birthday = null
         )
     )
     val uiState: StateFlow<AddEditUiState> = _uiState.asStateFlow()
@@ -62,6 +63,7 @@ class AddEditViewModel @Inject constructor(
                     preferredMethod = it.preferredMethod,
                     reminderTime = it.reminderTime,
                     notes = it.notes,
+                    birthday = it.birthday,
                     nextReminderDate = it.nextReminderDate
                 )
             }
@@ -96,6 +98,10 @@ class AddEditViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(nextReminderDate = date)
     }
     
+    fun updateBirthday(date: Date?) {
+        _uiState.value = _uiState.value.copy(birthday = date)
+    }
+    
     fun saveConnection() {
         android.util.Log.d("AddEditViewModel", "saveConnection() called")
         val state = _uiState.value
@@ -122,6 +128,7 @@ class AddEditViewModel @Inject constructor(
                     preferredMethod = state.preferredMethod,
                     reminderTime = state.reminderTime,
                     notes = state.notes,
+                    birthday = state.birthday,
                     nextReminderDate = nextDate,
                     isActive = true
                 )
@@ -166,6 +173,7 @@ data class AddEditUiState(
     val preferredMethod: ConnectionMethod,
     val reminderTime: String?,
     val notes: String?,
+    val birthday: Date? = null,
     val nextReminderDate: Date? = null
 )
 
