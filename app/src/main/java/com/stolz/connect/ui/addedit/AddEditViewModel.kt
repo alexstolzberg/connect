@@ -26,7 +26,8 @@ class AddEditViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         AddEditUiState(
             contactName = "",
-            contactPhoneNumber = "",
+            contactPhoneNumber = null,
+            contactEmail = null,
             reminderFrequencyDays = 7,
             preferredMethod = ConnectionMethod.BOTH,
             reminderTime = null,
@@ -59,6 +60,7 @@ class AddEditViewModel @Inject constructor(
                 _uiState.value = AddEditUiState(
                     contactName = it.contactName,
                     contactPhoneNumber = it.contactPhoneNumber,
+                    contactEmail = it.contactEmail,
                     reminderFrequencyDays = it.reminderFrequencyDays,
                     preferredMethod = it.preferredMethod,
                     reminderTime = it.reminderTime,
@@ -74,8 +76,12 @@ class AddEditViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(contactName = name)
     }
     
-    fun updateContactPhoneNumber(phone: String) {
-        _uiState.value = _uiState.value.copy(contactPhoneNumber = phone)
+    fun updateContactPhoneNumber(phone: String?) {
+        _uiState.value = _uiState.value.copy(contactPhoneNumber = phone?.takeIf { it.isNotBlank() })
+    }
+    
+    fun updateContactEmail(email: String?) {
+        _uiState.value = _uiState.value.copy(contactEmail = email?.takeIf { it.isNotBlank() })
     }
     
     fun updateReminderFrequencyDays(days: Int) {
@@ -107,9 +113,9 @@ class AddEditViewModel @Inject constructor(
         val state = _uiState.value
         android.util.Log.d("AddEditViewModel", "State: name=${state.contactName}, phone=${state.contactPhoneNumber}, isEdit=${connectionId != null}")
         
-        if (state.contactName.isBlank() || state.contactPhoneNumber.isBlank()) {
+        if (state.contactName.isBlank() || (state.contactPhoneNumber.isNullOrBlank() && state.contactEmail.isNullOrBlank())) {
             android.util.Log.w("AddEditViewModel", "Validation failed: blank fields")
-            _saveResult.value = SaveResult.Error("Please fill in all required fields")
+            _saveResult.value = SaveResult.Error("Please provide at least a name and either a phone number or email")
             return
         }
         
@@ -124,6 +130,7 @@ class AddEditViewModel @Inject constructor(
                     id = connectionId ?: 0,
                     contactName = state.contactName,
                     contactPhoneNumber = state.contactPhoneNumber,
+                    contactEmail = state.contactEmail,
                     reminderFrequencyDays = state.reminderFrequencyDays,
                     preferredMethod = state.preferredMethod,
                     reminderTime = state.reminderTime,
@@ -168,7 +175,8 @@ class AddEditViewModel @Inject constructor(
 
 data class AddEditUiState(
     val contactName: String,
-    val contactPhoneNumber: String,
+    val contactPhoneNumber: String? = null,
+    val contactEmail: String? = null,
     val reminderFrequencyDays: Int,
     val preferredMethod: ConnectionMethod,
     val reminderTime: String?,

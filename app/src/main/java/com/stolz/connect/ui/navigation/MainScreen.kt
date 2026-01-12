@@ -3,6 +3,7 @@ package com.stolz.connect.ui.navigation
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,9 +20,10 @@ fun MainScreen(navController: NavHostController) {
     
     Scaffold(
         bottomBar = {
-            // Only show bottom bar on main tabs (not on detail/edit screens)
+            // Only show bottom bar on main tabs (not on detail/edit screens or splash)
             if (currentDestination?.route == Screen.Today.route || 
-                currentDestination?.route == Screen.All.route) {
+                currentDestination?.route == Screen.All.route ||
+                currentDestination?.route == Screen.About.route) {
                 NavigationBar {
                     NavigationBarItem(
                         icon = { Icon(Icons.Default.Home, contentDescription = "Today") },
@@ -40,6 +42,16 @@ fun MainScreen(navController: NavHostController) {
                         onClick = {
                             navController.navigate(Screen.All.route) {
                                 popUpTo(Screen.All.route) { inclusive = true }
+                            }
+                        }
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(Icons.Default.Info, contentDescription = "About") },
+                        label = { Text("About") },
+                        selected = currentDestination?.route == Screen.About.route,
+                        onClick = {
+                            navController.navigate(Screen.About.route) {
+                                popUpTo(Screen.About.route) { inclusive = true }
                             }
                         }
                     )

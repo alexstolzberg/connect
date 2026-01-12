@@ -10,6 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -24,7 +26,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import com.stolz.connect.platform.ContactHelper
 import com.stolz.connect.util.ContactColorCategory
 import com.stolz.connect.util.TimeFormatter
@@ -170,8 +175,12 @@ fun TodayTab(
                         connection = connection,
                         isHighlighted = true,
                         onClick = { onConnectionClick(connection.id) },
-                        onCallClick = { onCallClick(connection.contactPhoneNumber) },
-                        onMessageClick = { onMessageClick(connection.contactPhoneNumber) },
+                        onCallClick = { 
+                            connection.contactPhoneNumber?.let { onCallClick(it) }
+                        },
+                        onMessageClick = { 
+                            connection.contactPhoneNumber?.let { onMessageClick(it) }
+                        },
                         onMarkComplete = { onMarkComplete(connection) }
                     )
                 }
@@ -214,8 +223,12 @@ fun AllTab(
                         connection = connection,
                         isHighlighted = connection.isDueToday,
                         onClick = { onConnectionClick(connection.id) },
-                        onCallClick = { onCallClick(connection.contactPhoneNumber) },
-                        onMessageClick = { onMessageClick(connection.contactPhoneNumber) },
+                        onCallClick = { 
+                            connection.contactPhoneNumber?.let { onCallClick(it) }
+                        },
+                        onMessageClick = { 
+                            connection.contactPhoneNumber?.let { onMessageClick(it) }
+                        },
                         onMarkComplete = { onMarkComplete(connection) }
                     )
                 }
@@ -230,6 +243,7 @@ fun ConnectionItem(
     onClick: () -> Unit,
     onCallClick: () -> Unit,
     onMessageClick: () -> Unit,
+    onEmailClick: (() -> Unit)? = null,
     onMarkComplete: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
@@ -271,6 +285,34 @@ fun ConnectionItem(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
+                // Profile picture or placeholder
+                if (connection.contactPhotoUri != null) {
+                    AsyncImage(
+                        model = connection.contactPhotoUri,
+                        contentDescription = connection.contactName,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(MaterialTheme.shapes.medium),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                } else {
+                    Surface(
+                        modifier = Modifier.size(56.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+                
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = connection.contactName,
@@ -278,11 +320,23 @@ fun ConnectionItem(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = connection.contactPhoneNumber,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (connection.contactPhoneNumber != null) {
+                        Text(
+                            text = connection.contactPhoneNumber,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (connection.contactEmail != null) {
+                        if (connection.contactPhoneNumber != null) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                        }
+                        Text(
+                            text = connection.contactEmail,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     
                     // Next reminder
@@ -351,12 +405,14 @@ fun ConnectionItem(
                         }
                     }
                     
-                    // Call and Message buttons
+                    // Contact method buttons (only show if available)
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
-                            connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                        // Show call button only if phone number exists and method allows it
+                        if (connection.contactPhoneNumber != null &&
+                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
+                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
                         ) {
                             IconButton(
                                 onClick = onCallClick,
@@ -369,8 +425,10 @@ fun ConnectionItem(
                                 )
                             }
                         }
-                        if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
-                            connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                        // Show message button only if phone number exists and method allows it
+                        if (connection.contactPhoneNumber != null &&
+                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
+                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
                         ) {
                             IconButton(
                                 onClick = onMessageClick,
@@ -379,6 +437,22 @@ fun ConnectionItem(
                                 Icon(
                                     imageVector = Icons.Default.Send,
                                     contentDescription = "Message",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+                        // Show email button only if email exists and method allows it
+                        if (connection.contactEmail != null &&
+                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.EMAIL ||
+                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
+                        ) {
+                            IconButton(
+                                onClick = onEmailClick ?: {},
+                                modifier = Modifier.size(40.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Email,
+                                    contentDescription = "Email",
                                     tint = MaterialTheme.colorScheme.primary
                                 )
                             }

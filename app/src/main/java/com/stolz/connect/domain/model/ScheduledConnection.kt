@@ -5,7 +5,9 @@ import java.util.Date
 data class ScheduledConnection(
     val id: Long = 0,
     val contactName: String,
-    val contactPhoneNumber: String,
+    val contactPhoneNumber: String? = null,
+    val contactEmail: String? = null,
+    val contactPhotoUri: String? = null, // URI to contact photo
     val contactId: String? = null,
     val reminderFrequencyDays: Int,
     val preferredMethod: ConnectionMethod,
@@ -45,5 +47,6 @@ data class ScheduledConnection(
 enum class ConnectionMethod {
     CALL,
     MESSAGE,
+    EMAIL,
     BOTH
 }

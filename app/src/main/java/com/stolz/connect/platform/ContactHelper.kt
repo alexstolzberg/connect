@@ -83,4 +83,55 @@ object ContactHelper {
             e.printStackTrace()
         }
     }
+    
+    fun sendEmail(context: Context, email: String) {
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:$email")
+        }
+        try {
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            } else {
+                // Fallback to ACTION_SEND
+                val sendIntent = Intent(Intent.ACTION_SEND).apply {
+                    type = "message/rfc822"
+                    putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+                }
+                if (sendIntent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(Intent.createChooser(sendIntent, "Send email"))
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ContactHelper", "Failed to open email app", e)
+        }
+    }
+    
+    fun getContactPhotoUri(context: Context, contactId: String?): Uri? {
+        if (contactId == null) return null
+        return try {
+            val contentUri = android.provider.ContactsContract.Contacts.CONTENT_URI
+            val contactUri = android.content.ContentUris.withAppendedId(contentUri, contactId.toLong())
+            val photoUri = android.provider.ContactsContract.Contacts.openContactPhotoInputStream(
+                context.contentResolver,
+                contactUri
+            )
+            if (photoUri != null) {
+                photoUri.close()
+                android.provider.ContactsContract.Contacts.getLookupUri(
+                    context.contentResolver,
+                    contactUri
+                )?.let { lookupUri ->
+                    android.provider.ContactsContract.Contacts.getLookupUri(
+                        context.contentResolver,
+                        lookupUri
+                    )
+                }
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ContactHelper", "Failed to get contact photo", e)
+            null
+        }
+    }
 }

@@ -9,10 +9,12 @@ data class ScheduledConnectionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val contactName: String,
-    val contactPhoneNumber: String,
+    val contactPhoneNumber: String? = null,
+    val contactEmail: String? = null,
+    val contactPhotoUri: String? = null, // URI to contact photo
     val contactId: String? = null, // Android contact ID if from device contacts
     val reminderFrequencyDays: Int, // e.g., 7 for weekly, 30 for monthly
-    val preferredMethod: String, // "call", "message", or "both"
+    val preferredMethod: String, // "call", "message", "email", or "both"
     val reminderTime: String? = null, // Optional time of day (HH:mm format)
     val lastContactedDate: Date? = null,
     val nextReminderDate: Date,

@@ -1,10 +1,13 @@
 package com.stolz.connect.ui.addedit
 
 import android.Manifest
+import android.content.ContentUris
 import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
@@ -65,6 +68,35 @@ fun AddEditScreen(
                                 viewModel.updateContactPhoneNumber(phoneNumber)
                             }
                         }
+                        
+                        // Get email
+                        val emailCursor = context.contentResolver.query(
+                            ContactsContract.CommonDataKinds.Email.CONTENT_URI,
+                            null,
+                            ContactsContract.CommonDataKinds.Email.CONTACT_ID + " = ?",
+                            arrayOf(contactId),
+                            null
+                        )
+                        emailCursor?.use { ec ->
+                            if (ec.moveToFirst()) {
+                                val emailIndex = ec.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA)
+                                val email = ec.getString(emailIndex)
+                                viewModel.updateContactEmail(email)
+                            }
+                        }
+                        
+                        // Get photo URI
+                        val photoUri = ContactsContract.Contacts.openContactPhotoInputStream(
+                            context.contentResolver,
+                            android.content.ContentUris.withAppendedId(
+                                ContactsContract.Contacts.CONTENT_URI,
+                                contactId.toLong()
+                            )
+                        )
+                        if (photoUri != null) {
+                            photoUri.close()
+                            // Photo URI will be stored when saving
+                        }
                     }
                 }
             }
@@ -120,6 +152,7 @@ fun AddEditScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -144,13 +177,24 @@ fun AddEditScreen(
                 singleLine = true
             )
             
-            // Phone number
+            // Phone number (optional if email provided)
             OutlinedTextField(
-                value = uiState.contactPhoneNumber,
-                onValueChange = viewModel::updateContactPhoneNumber,
-                label = { Text("Phone Number *") },
+                value = uiState.contactPhoneNumber ?: "",
+                onValueChange = { viewModel.updateContactPhoneNumber(it) },
+                label = { Text("Phone Number") },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+                placeholder = { Text("Optional if email provided") }
+            )
+            
+            // Email (optional if phone provided)
+            OutlinedTextField(
+                value = uiState.contactEmail ?: "",
+                onValueChange = { viewModel.updateContactEmail(it) },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                placeholder = { Text("Optional if phone provided") }
             )
             
             // Reminder frequency
@@ -206,26 +250,42 @@ fun AddEditScreen(
             )
             
             // Preferred method
+            val phoneNumber = uiState.contactPhoneNumber
+            val email = uiState.contactEmail
+            val hasPhone = !phoneNumber.isNullOrBlank()
+            val hasEmail = !email.isNullOrBlank()
+            
             Text("Preferred Method", style = MaterialTheme.typography.labelLarge)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                FilterChip(
-                    selected = uiState.preferredMethod == ConnectionMethod.CALL,
-                    onClick = { viewModel.updatePreferredMethod(ConnectionMethod.CALL) },
-                    label = { Text("Call") }
-                )
-                FilterChip(
-                    selected = uiState.preferredMethod == ConnectionMethod.MESSAGE,
-                    onClick = { viewModel.updatePreferredMethod(ConnectionMethod.MESSAGE) },
-                    label = { Text("Message") }
-                )
-                FilterChip(
-                    selected = uiState.preferredMethod == ConnectionMethod.BOTH,
-                    onClick = { viewModel.updatePreferredMethod(ConnectionMethod.BOTH) },
-                    label = { Text("Both") }
-                )
+                if (hasPhone) {
+                    FilterChip(
+                        selected = uiState.preferredMethod == ConnectionMethod.CALL,
+                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.CALL) },
+                        label = { Text("Call") }
+                    )
+                    FilterChip(
+                        selected = uiState.preferredMethod == ConnectionMethod.MESSAGE,
+                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.MESSAGE) },
+                        label = { Text("Message") }
+                    )
+                }
+                if (hasEmail) {
+                    FilterChip(
+                        selected = uiState.preferredMethod == ConnectionMethod.EMAIL,
+                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.EMAIL) },
+                        label = { Text("Email") }
+                    )
+                }
+                if (hasPhone && hasEmail) {
+                    FilterChip(
+                        selected = uiState.preferredMethod == ConnectionMethod.BOTH,
+                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.BOTH) },
+                        label = { Text("Both") }
+                    )
+                }
             }
             
             // Birthday (optional)
@@ -294,7 +354,7 @@ fun AddEditScreen(
                 maxLines = 5
             )
             
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
             
             // Error message
             if (saveResult is SaveResult.Error) {

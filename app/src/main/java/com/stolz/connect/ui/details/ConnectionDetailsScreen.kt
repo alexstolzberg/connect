@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
@@ -167,11 +168,23 @@ fun ConnectionDetailsScreen(
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold
                             )
-                            Text(
-                                text = connection.contactPhoneNumber,
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                            if (connection.contactPhoneNumber != null) {
+                                Text(
+                                    text = connection.contactPhoneNumber,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            if (connection.contactEmail != null) {
+                                if (connection.contactPhoneNumber != null) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                }
+                                Text(
+                                    text = connection.contactEmail,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             
                             Divider()
                             
@@ -241,8 +254,9 @@ fun ConnectionDetailsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
-                            connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                        if (connection.contactPhoneNumber != null &&
+                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
+                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
                         ) {
                             Button(
                                 onClick = {
@@ -255,8 +269,9 @@ fun ConnectionDetailsScreen(
                                 Text("Call")
                             }
                         }
-                        if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
-                            connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                        if (connection.contactPhoneNumber != null &&
+                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
+                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
                         ) {
                             Button(
                                 onClick = {
@@ -267,6 +282,21 @@ fun ConnectionDetailsScreen(
                                 Icon(Icons.Default.Send, contentDescription = null)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("Message")
+                            }
+                        }
+                        if (connection.contactEmail != null &&
+                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.EMAIL ||
+                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
+                        ) {
+                            Button(
+                                onClick = {
+                                    ContactHelper.sendEmail(context, connection.contactEmail)
+                                },
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Icon(Icons.Default.Email, contentDescription = null)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Email")
                             }
                         }
                     }

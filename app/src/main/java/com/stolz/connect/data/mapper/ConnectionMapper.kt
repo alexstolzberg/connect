@@ -9,11 +9,14 @@ fun ScheduledConnectionEntity.toDomain(): ScheduledConnection {
         id = id,
         contactName = contactName,
         contactPhoneNumber = contactPhoneNumber,
+        contactEmail = contactEmail,
+        contactPhotoUri = contactPhotoUri,
         contactId = contactId,
         reminderFrequencyDays = reminderFrequencyDays,
         preferredMethod = when (preferredMethod.lowercase()) {
             "call" -> ConnectionMethod.CALL
             "message" -> ConnectionMethod.MESSAGE
+            "email" -> ConnectionMethod.EMAIL
             "both" -> ConnectionMethod.BOTH
             else -> ConnectionMethod.BOTH
         },
@@ -32,11 +35,14 @@ fun ScheduledConnection.toEntity(): ScheduledConnectionEntity {
         id = id,
         contactName = contactName,
         contactPhoneNumber = contactPhoneNumber,
+        contactEmail = contactEmail,
+        contactPhotoUri = contactPhotoUri,
         contactId = contactId,
         reminderFrequencyDays = reminderFrequencyDays,
         preferredMethod = when (preferredMethod) {
             ConnectionMethod.CALL -> "call"
             ConnectionMethod.MESSAGE -> "message"
+            ConnectionMethod.EMAIL -> "email"
             ConnectionMethod.BOTH -> "both"
         },
         reminderTime = reminderTime,

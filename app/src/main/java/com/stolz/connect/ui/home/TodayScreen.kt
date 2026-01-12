@@ -105,9 +105,14 @@ fun TodayScreen(
                         connection = connection,
                         isHighlighted = true,
                         onClick = { onConnectionClick(connection.id) },
-                        onCallClick = { handleCallClick(connection.contactPhoneNumber) },
+                        onCallClick = { 
+                            connection.contactPhoneNumber?.let { handleCallClick(it) }
+                        },
                         onMessageClick = {
-                            ContactHelper.sendMessage(context, connection.contactPhoneNumber)
+                            connection.contactPhoneNumber?.let { ContactHelper.sendMessage(context, it) }
+                        },
+                        onEmailClick = {
+                            connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
                         },
                         onMarkComplete = { viewModel.markAsContacted(connection) }
                     )

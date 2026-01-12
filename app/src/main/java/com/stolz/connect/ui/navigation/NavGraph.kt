@@ -8,13 +8,16 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.stolz.connect.ui.addedit.AddEditScreen
+import com.stolz.connect.ui.about.AboutScreen
 import com.stolz.connect.ui.details.ConnectionDetailsScreen
 import com.stolz.connect.ui.home.AllScreen
 import com.stolz.connect.ui.home.TodayScreen
 
 sealed class Screen(val route: String) {
+    object Splash : Screen("splash")
     object Today : Screen("today")
     object All : Screen("all")
+    object About : Screen("about")
     object AddEdit : Screen("add_edit/{connectionId}") {
         fun createRoute(connectionId: Long? = null) = if (connectionId != null) {
             "add_edit/$connectionId"
@@ -34,9 +37,19 @@ fun NavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Today.route,
+        startDestination = Screen.Splash.route,
         modifier = modifier
     ) {
+        composable(Screen.Splash.route) {
+            com.stolz.connect.ui.splash.SplashScreen(
+                onNavigateToMain = {
+                    navController.navigate(Screen.Today.route) {
+                        popUpTo(Screen.Splash.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        
         composable(Screen.Today.route) {
             TodayScreen(
                 onAddClick = {
@@ -57,6 +70,10 @@ fun NavGraph(
                     navController.navigate(Screen.Details.createRoute(connectionId))
                 }
             )
+        }
+        
+        composable(Screen.About.route) {
+            AboutScreen()
         }
         
         composable(
