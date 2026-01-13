@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.stolz.connect.data.repository.ConnectionRepository
 import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.domain.model.ScheduledConnection
+import com.stolz.connect.util.ValidationUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,11 +29,14 @@ class AddEditViewModel @Inject constructor(
             contactName = "",
             contactPhoneNumber = null,
             contactEmail = null,
+            contactPhotoUri = null,
+            contactId = null,
             reminderFrequencyDays = 7,
             preferredMethod = ConnectionMethod.BOTH,
             reminderTime = null,
             notes = null,
-            birthday = null
+            birthday = null,
+            promptOnBirthday = true
         )
     )
     val uiState: StateFlow<AddEditUiState> = _uiState.asStateFlow()
@@ -61,11 +65,14 @@ class AddEditViewModel @Inject constructor(
                     contactName = it.contactName,
                     contactPhoneNumber = it.contactPhoneNumber,
                     contactEmail = it.contactEmail,
+                    contactPhotoUri = it.contactPhotoUri,
+                    contactId = it.contactId,
                     reminderFrequencyDays = it.reminderFrequencyDays,
                     preferredMethod = it.preferredMethod,
                     reminderTime = it.reminderTime,
                     notes = it.notes,
                     birthday = it.birthday,
+                    promptOnBirthday = it.promptOnBirthday,
                     nextReminderDate = it.nextReminderDate
                 )
             }
@@ -77,14 +84,34 @@ class AddEditViewModel @Inject constructor(
     }
     
     fun updateContactPhoneNumber(phone: String?) {
-        _uiState.value = _uiState.value.copy(contactPhoneNumber = phone?.takeIf { it.isNotBlank() })
+        val cleaned = phone?.takeIf { it.isNotBlank() }
+        _uiState.value = _uiState.value.copy(contactPhoneNumber = cleaned)
     }
     
     fun updateContactEmail(email: String?) {
-        _uiState.value = _uiState.value.copy(contactEmail = email?.takeIf { it.isNotBlank() })
+        val cleaned = email?.takeIf { it.isNotBlank() }
+        _uiState.value = _uiState.value.copy(contactEmail = cleaned)
+    }
+    
+    fun updateContactPhotoUri(photoUri: String?) {
+        _uiState.value = _uiState.value.copy(contactPhotoUri = photoUri)
+    }
+    
+    fun updateContactId(contactId: String?) {
+        _uiState.value = _uiState.value.copy(contactId = contactId)
     }
     
     fun updateReminderFrequencyDays(days: Int) {
+        _uiState.value = _uiState.value.copy(reminderFrequencyDays = days)
+    }
+    
+    fun updateReminderFrequencyDaysFromString(daysString: String) {
+        // Allow empty string, but default to current value if invalid
+        if (daysString.isBlank()) {
+            // Keep current value when field is empty
+            return
+        }
+        val days = daysString.toIntOrNull() ?: _uiState.value.reminderFrequencyDays
         _uiState.value = _uiState.value.copy(reminderFrequencyDays = days)
     }
     
@@ -108,14 +135,31 @@ class AddEditViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(birthday = date)
     }
     
+    fun updatePromptOnBirthday(prompt: Boolean) {
+        _uiState.value = _uiState.value.copy(promptOnBirthday = prompt)
+    }
+    
     fun saveConnection() {
         android.util.Log.d("AddEditViewModel", "saveConnection() called")
         val state = _uiState.value
         android.util.Log.d("AddEditViewModel", "State: name=${state.contactName}, phone=${state.contactPhoneNumber}, isEdit=${connectionId != null}")
         
+        // Validate fields
         if (state.contactName.isBlank() || (state.contactPhoneNumber.isNullOrBlank() && state.contactEmail.isNullOrBlank())) {
             android.util.Log.w("AddEditViewModel", "Validation failed: blank fields")
             _saveResult.value = SaveResult.Error("Please provide at least a name and either a phone number or email")
+            return
+        }
+        
+        // Validate phone number if provided
+        if (!state.contactPhoneNumber.isNullOrBlank() && !ValidationUtils.isValidPhone(state.contactPhoneNumber)) {
+            _saveResult.value = SaveResult.Error("Please enter a valid phone number")
+            return
+        }
+        
+        // Validate email if provided
+        if (!state.contactEmail.isNullOrBlank() && !ValidationUtils.isValidEmail(state.contactEmail)) {
+            _saveResult.value = SaveResult.Error("Please enter a valid email address")
             return
         }
         
@@ -131,11 +175,14 @@ class AddEditViewModel @Inject constructor(
                     contactName = state.contactName,
                     contactPhoneNumber = state.contactPhoneNumber,
                     contactEmail = state.contactEmail,
+                    contactPhotoUri = state.contactPhotoUri,
+                    contactId = state.contactId,
                     reminderFrequencyDays = state.reminderFrequencyDays,
                     preferredMethod = state.preferredMethod,
                     reminderTime = state.reminderTime,
                     notes = state.notes,
                     birthday = state.birthday,
+                    promptOnBirthday = state.promptOnBirthday,
                     nextReminderDate = nextDate,
                     isActive = true
                 )
@@ -177,11 +224,14 @@ data class AddEditUiState(
     val contactName: String,
     val contactPhoneNumber: String? = null,
     val contactEmail: String? = null,
+    val contactPhotoUri: String? = null,
+    val contactId: String? = null,
     val reminderFrequencyDays: Int,
     val preferredMethod: ConnectionMethod,
     val reminderTime: String?,
     val notes: String?,
     val birthday: Date? = null,
+    val promptOnBirthday: Boolean = true,
     val nextReminderDate: Date? = null
 )
 

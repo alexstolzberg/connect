@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -22,10 +23,17 @@ fun AboutScreen() {
             )
         }
     ) { paddingValues ->
+        // Only use bottom padding to avoid double top padding
+        val contentPadding = PaddingValues(
+            top = 0.dp,
+            bottom = paddingValues.calculateBottomPadding(),
+            start = 0.dp,
+            end = 0.dp
+        )
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(contentPadding)
                 .padding(24.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
@@ -81,7 +89,7 @@ fun AboutScreen() {
                 HowToStep(
                     number = "2",
                     title = "View Your Reminders",
-                    description = "Check the 'Today' tab to see connections due today, or the 'All' tab to see all your scheduled connections. Connections are color-coded: green (recent), yellow (medium), red (long time since contact)."
+                    description = "Check the 'Today' tab to see connections due today, or the 'All' tab to see all your scheduled connections. Connections are color-coded based on how recently you've contacted them (see Color Coding section below)."
                 )
                 HowToStep(
                     number = "3",
@@ -94,6 +102,35 @@ fun AboutScreen() {
                     description = "Tap any connection to view details, edit settings, or delete if needed. You can also add notes and birthdays for each connection."
                 )
             }
+            
+            Divider()
+            
+            // Color Coding Section
+            Text(
+                text = "Color Coding",
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = "Connections are color-coded to help you quickly see who needs attention:",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            ColorCodingRule(
+                colorName = "Green",
+                color = Color(0xFF4CAF50),
+                description = "Contacted within your reminder frequency (e.g., within 7 days for weekly reminders)"
+            )
+            ColorCodingRule(
+                colorName = "Yellow",
+                color = Color(0xFFFFC107),
+                description = "Overdue by up to one reminder period (e.g., 7-14 days for weekly reminders)"
+            )
+            ColorCodingRule(
+                colorName = "Red",
+                color = Color(0xFFF44336),
+                description = "Overdue by more than one reminder period (e.g., more than 14 days for weekly reminders) or never contacted"
+            )
             
             Divider()
             
@@ -172,22 +209,54 @@ fun FeatureItem(
     title: String,
     description: String
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleSmall,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1f)
+            fontWeight = FontWeight.SemiBold
         )
         Text(
             text = description,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+fun ColorCodingRule(
+    colorName: String,
+    color: Color,
+    description: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Surface(
+            modifier = Modifier.size(24.dp),
+            shape = MaterialTheme.shapes.small,
+            color = color
+        ) {}
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = colorName,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }

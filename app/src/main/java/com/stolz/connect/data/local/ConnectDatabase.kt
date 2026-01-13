@@ -10,7 +10,7 @@ import com.stolz.connect.data.local.entity.ScheduledConnectionEntity
 
 @Database(
     entities = [ScheduledConnectionEntity::class, CustomContactEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(DateConverters::class)

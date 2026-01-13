@@ -34,11 +34,11 @@ object TimeFormatter {
         val now = Date()
         val diffInDays = TimeUnit.MILLISECONDS.toDays(now.time - lastContactedDate.time)
         
-        // Green: contacted within 50% of frequency
-        // Yellow: contacted within 100% of frequency
-        // Red: contacted more than 100% of frequency ago
-        val greenThreshold = reminderFrequencyDays * 0.5
-        val yellowThreshold = reminderFrequencyDays.toDouble()
+        // Green: contacted within reminder frequency (not overdue)
+        // Yellow: overdue by up to one reminder frequency period
+        // Red: overdue by more than one reminder frequency period
+        val greenThreshold = reminderFrequencyDays.toDouble()
+        val yellowThreshold = reminderFrequencyDays * 2.0
         
         return when {
             diffInDays <= greenThreshold -> ContactColorCategory.GREEN

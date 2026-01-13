@@ -134,4 +134,75 @@ object ContactHelper {
             null
         }
     }
+    
+    fun openContactInPhone(context: Context, contactId: String) {
+        try {
+            android.util.Log.d("ContactHelper", "Opening contact with ID: $contactId")
+            
+            // Build contact URI
+            val contactUri = android.content.ContentUris.withAppendedId(
+                android.provider.ContactsContract.Contacts.CONTENT_URI,
+                contactId.toLong()
+            )
+            
+            // Get lookup URI for stable reference
+            val lookupUri = android.provider.ContactsContract.Contacts.getLookupUri(
+                context.contentResolver,
+                contactUri
+            )
+            
+            android.util.Log.d("ContactHelper", "Contact URI: $contactUri, Lookup URI: $lookupUri")
+            
+            // Use lookup URI if available, otherwise use contact URI
+            val finalUri = lookupUri ?: contactUri
+            
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = finalUri
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            
+            val resolveInfo = intent.resolveActivity(context.packageManager)
+            android.util.Log.d("ContactHelper", "Resolve info: $resolveInfo")
+            
+            if (resolveInfo != null) {
+                context.startActivity(intent)
+                android.util.Log.d("ContactHelper", "Successfully started contact view activity")
+            } else {
+                android.util.Log.e("ContactHelper", "No activity found to handle contact view")
+                // Fallback: try with tel: scheme if we have a phone number
+                // But we don't have phone number here, so just log the error
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ContactHelper", "Failed to open contact: ${e.message}", e)
+            e.printStackTrace()
+        }
+    }
+    
+    fun addContactToPhone(
+        context: Context,
+        name: String,
+        phoneNumber: String?,
+        email: String?
+    ) {
+        try {
+            val intent = Intent(Intent.ACTION_INSERT).apply {
+                type = android.provider.ContactsContract.Contacts.CONTENT_TYPE
+                putExtra(android.provider.ContactsContract.Intents.Insert.NAME, name)
+                if (phoneNumber != null) {
+                    putExtra(android.provider.ContactsContract.Intents.Insert.PHONE, phoneNumber)
+                }
+                if (email != null) {
+                    putExtra(android.provider.ContactsContract.Intents.Insert.EMAIL, email)
+                }
+            }
+            
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            } else {
+                android.util.Log.e("ContactHelper", "No app found to add contact")
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("ContactHelper", "Failed to add contact", e)
+        }
+    }
 }

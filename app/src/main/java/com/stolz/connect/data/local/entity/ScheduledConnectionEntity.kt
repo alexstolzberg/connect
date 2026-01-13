@@ -20,6 +20,7 @@ data class ScheduledConnectionEntity(
     val nextReminderDate: Date,
     val notes: String? = null,
     val birthday: Date? = null, // Optional birthday for birthday reminders
+    val promptOnBirthday: Boolean = true, // Whether to prompt for connection on birthday
     val createdAt: Date = Date(),
     val isActive: Boolean = true
 )

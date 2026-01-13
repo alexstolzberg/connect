@@ -19,6 +19,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stolz.connect.domain.model.ConnectionMethod
+import com.stolz.connect.util.ValidationUtils
+import com.stolz.connect.util.PhoneNumberTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -85,17 +90,38 @@ fun AddEditScreen(
                             }
                         }
                         
-                        // Get photo URI
-                        val photoUri = ContactsContract.Contacts.openContactPhotoInputStream(
-                            context.contentResolver,
-                            android.content.ContentUris.withAppendedId(
-                                ContactsContract.Contacts.CONTENT_URI,
-                                contactId.toLong()
-                            )
+                        // Get photo URI and contact ID
+                        val contactUri = android.content.ContentUris.withAppendedId(
+                            ContactsContract.Contacts.CONTENT_URI,
+                            contactId.toLong()
                         )
-                        if (photoUri != null) {
-                            photoUri.close()
-                            // Photo URI will be stored when saving
+                        
+                        // Check if contact has a photo
+                        val photoInputStream = ContactsContract.Contacts.openContactPhotoInputStream(
+                            context.contentResolver,
+                            contactUri
+                        )
+                        
+                        if (photoInputStream != null) {
+                            photoInputStream.close()
+                            // Get lookup URI for stable photo reference (survives contact ID changes)
+                            val lookupUri = ContactsContract.Contacts.getLookupUri(
+                                context.contentResolver,
+                                contactUri
+                            )
+                            // Construct photo URI by appending /photo to lookup URI
+                            // If lookup URI is null, fall back to contact URI
+                            val photoUriString = if (lookupUri != null) {
+                                android.net.Uri.withAppendedPath(lookupUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
+                            } else {
+                                android.net.Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY).toString()
+                            }
+                            viewModel.updateContactPhotoUri(photoUriString)
+                            viewModel.updateContactId(contactId)
+                        } else {
+                            // No photo, clear any existing photo URI but keep contact ID
+                            viewModel.updateContactPhotoUri(null)
+                            viewModel.updateContactId(contactId)
                         }
                     }
                 }
@@ -133,6 +159,10 @@ fun AddEditScreen(
         }
     }
     
+    // Check if form is valid (name required, and either phone or email required)
+    val isFormValid = uiState.contactName.isNotBlank() && 
+                     (!uiState.contactPhoneNumber.isNullOrBlank() || !uiState.contactEmail.isNullOrBlank())
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -143,6 +173,14 @@ fun AddEditScreen(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
                         )
+                    }
+                },
+                actions = {
+                    TextButton(
+                        onClick = viewModel::saveConnection,
+                        enabled = isFormValid
+                    ) {
+                        Text("Save")
                     }
                 }
             )
@@ -178,23 +216,35 @@ fun AddEditScreen(
             )
             
             // Phone number (optional if email provided)
+            val phoneError = ValidationUtils.getPhoneError(uiState.contactPhoneNumber)
             OutlinedTextField(
                 value = uiState.contactPhoneNumber ?: "",
-                onValueChange = { viewModel.updateContactPhoneNumber(it) },
+                onValueChange = { newValue ->
+                    // Filter to only allow digits
+                    val digitsOnly = newValue.filter { it.isDigit() }
+                    viewModel.updateContactPhoneNumber(digitsOnly)
+                },
                 label = { Text("Phone Number") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Optional if email provided") }
+                placeholder = { Text("Optional if email provided") },
+                isError = phoneError != null,
+                supportingText = phoneError?.let { { Text(it) } },
+                visualTransformation = PhoneNumberTransformation(),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
             
             // Email (optional if phone provided)
+            val emailError = ValidationUtils.getEmailError(uiState.contactEmail)
             OutlinedTextField(
                 value = uiState.contactEmail ?: "",
                 onValueChange = { viewModel.updateContactEmail(it) },
                 label = { Text("Email") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Optional if phone provided") }
+                placeholder = { Text("Optional if phone provided") },
+                isError = emailError != null,
+                supportingText = emailError?.let { { Text(it) } }
             )
             
             // Reminder frequency
@@ -241,9 +291,16 @@ fun AddEditScreen(
                     Text("Monthly")
                 }
             }
+            var customDaysText by remember { mutableStateOf(uiState.reminderFrequencyDays.toString()) }
+            LaunchedEffect(uiState.reminderFrequencyDays) {
+                customDaysText = uiState.reminderFrequencyDays.toString()
+            }
             OutlinedTextField(
-                value = uiState.reminderFrequencyDays.toString(),
-                onValueChange = { viewModel.updateReminderFrequencyDays(it.toIntOrNull() ?: 7) },
+                value = customDaysText,
+                onValueChange = { 
+                    customDaysText = it
+                    viewModel.updateReminderFrequencyDaysFromString(it)
+                },
                 label = { Text("Custom (days)") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -283,7 +340,7 @@ fun AddEditScreen(
                     FilterChip(
                         selected = uiState.preferredMethod == ConnectionMethod.BOTH,
                         onClick = { viewModel.updatePreferredMethod(ConnectionMethod.BOTH) },
-                        label = { Text("Both") }
+                        label = { Text("Any") }
                     )
                 }
             }
@@ -344,6 +401,24 @@ fun AddEditScreen(
                 }
             }
             
+            // Prompt on birthday checkbox (only show if birthday is set)
+            if (uiState.birthday != null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Prompt for connection on birthday",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Checkbox(
+                        checked = uiState.promptOnBirthday,
+                        onCheckedChange = viewModel::updatePromptOnBirthday
+                    )
+                }
+            }
+            
             // Notes
             OutlinedTextField(
                 value = uiState.notes ?: "",
@@ -363,14 +438,6 @@ fun AddEditScreen(
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium
                 )
-            }
-            
-            // Save button
-            Button(
-                onClick = viewModel::saveConnection,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Save Connection")
             }
         }
     }

@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,13 +27,22 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
 import com.stolz.connect.platform.ContactHelper
 import com.stolz.connect.util.ContactColorCategory
 import com.stolz.connect.util.TimeFormatter
+import com.stolz.connect.util.PhoneNumberFormatter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -247,217 +257,383 @@ fun ConnectionItem(
     onMarkComplete: () -> Unit
 ) {
     val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-    
+
+    // Animation state for checkmark and item removal
+    var isRemoving by remember { mutableStateOf(false) }
+    var checkmarkState by remember { mutableStateOf(0) } // 0 = hollow grey, 1 = drawing, 2 = filled green
+    var checkmarkScale by remember { mutableStateOf(1f) }
+
+    // Animate checkmark scale on click
+    val checkmarkScaleAnim = animateFloatAsState(
+        targetValue = checkmarkScale,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "checkmark_scale"
+    )
+
+    // Animate checkmark color
+    val checkmarkColor by animateColorAsState(
+        targetValue = when (checkmarkState) {
+            0 -> Color.Gray // Hollow grey
+            1 -> Color.Gray // Still grey while drawing
+            2 -> Color(0xFF4CAF50) // Green when filled
+            else -> Color.Gray
+        },
+        animationSpec = tween(durationMillis = 200),
+        label = "checkmark_color"
+    )
+
+    // Animate item removal
+    val itemAlpha by animateFloatAsState(
+        targetValue = if (isRemoving) 0f else 1f,
+        animationSpec = tween(durationMillis = 400),
+        label = "item_alpha"
+    )
+
+    val itemOffsetX by animateFloatAsState(
+        targetValue = if (isRemoving) -1000f else 0f,
+        animationSpec = tween(
+            durationMillis = 400,
+            easing = FastOutSlowInEasing
+        ),
+        label = "item_offset"
+    )
+
+    // Auto-refresh timer for relative time display (updates every minute)
+    var refreshTrigger by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(60_000) // 60 seconds = 1 minute
+            refreshTrigger++
+        }
+    }
+
+    val scope = rememberCoroutineScope()
+
+    fun handleMarkComplete() {
+        scope.launch {
+            // Step 1: Start drawing animation (switch to drawing state)
+            checkmarkState = 1
+            delay(300) // Wait for drawing animation
+
+            // Step 2: Fill in and change to green
+            checkmarkState = 2
+            checkmarkScale = 1.2f
+            delay(200) // Wait for color change
+
+            // Step 3: Bounce effect
+            checkmarkScale = 1f
+            delay(150)
+
+            // Step 4: Start removal animation
+            isRemoving = true
+            delay(400) // Wait for removal animation
+
+            // Step 5: Call the actual mark complete
+            onMarkComplete()
+        }
+    }
+
     // Get color category based on last contacted date
     val colorCategory = TimeFormatter.getLastContactedColorCategory(
         connection.lastContactedDate,
         connection.reminderFrequencyDays
     )
-    
-    // Determine border/indicator color
+
+    // Determine border/indicator color and background color
     val indicatorColor = when (colorCategory) {
         ContactColorCategory.GREEN -> Color(0xFF4CAF50) // Green
         ContactColorCategory.YELLOW -> Color(0xFFFFC107) // Yellow/Amber
         ContactColorCategory.RED -> Color(0xFFF44336) // Red
     }
-    
+
+    val backgroundColor = when (colorCategory) {
+        ContactColorCategory.GREEN -> Color(0xFFE8F5E9) // Light green
+        ContactColorCategory.YELLOW -> Color(0xFFFFF9C4) // Light yellow
+        ContactColorCategory.RED -> Color(0xFFFFEBEE) // Light red
+    }
+
+    // Use refreshTrigger to force recomposition and recalculate relative time
+    val relativeTimeText = remember(refreshTrigger, connection.lastContactedDate) {
+        if (connection.lastContactedDate != null) {
+            TimeFormatter.formatRelativeTime(connection.lastContactedDate)
+        } else {
+            null
+        }
+    }
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .alpha(itemAlpha)
+            .offset { IntOffset(itemOffsetX.toInt(), 0) }
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = if (isHighlighted) {
-                MaterialTheme.colorScheme.secondaryContainer
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
+            containerColor = backgroundColor
         ),
         border = androidx.compose.foundation.BorderStroke(
             width = 2.dp,
             color = indicatorColor.copy(alpha = 0.6f)
         )
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
-                // Profile picture or placeholder
-                if (connection.contactPhotoUri != null) {
-                    AsyncImage(
-                        model = connection.contactPhotoUri,
-                        contentDescription = connection.contactName,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clip(MaterialTheme.shapes.medium),
-                        contentScale = ContentScale.Crop
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                } else {
-                    Surface(
-                        modifier = Modifier.size(56.dp),
-                        shape = MaterialTheme.shapes.medium,
-                        color = MaterialTheme.colorScheme.primaryContainer
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    // Profile picture or placeholder
+                    if (connection.contactPhotoUri != null) {
+                        AsyncImage(
+                            model = connection.contactPhotoUri,
+                            contentDescription = connection.contactName,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(MaterialTheme.shapes.medium),
+                            contentScale = ContentScale.Crop
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                    } else {
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = MaterialTheme.shapes.medium,
+                            color = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Default.Person,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+                    }
+
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = connection.contactName,
+                                style = MaterialTheme.typography.titleLarge,
+                                fontWeight = FontWeight.Bold
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            if (connection.contactPhoneNumber != null) {
+                                Column {
+                                    Text(
+                                        text = "Phone",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Spacer(modifier = Modifier.height(1.dp))
+                                    Text(
+                                        text = PhoneNumberFormatter.format(connection.contactPhoneNumber),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            if (connection.contactEmail != null) {
+                                if (connection.contactPhoneNumber != null) {
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                }
+                                Column {
+                                    Text(
+                                        text = "Email",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                    Spacer(modifier = Modifier.height(1.dp))
+                                    Text(
+                                        text = connection.contactEmail,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        if (connection.birthday != null) {
+                            if (connection.contactPhoneNumber != null || connection.contactEmail != null) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                            }
+                            Column {
+                                Text(
+                                    text = "Birthday",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium
+                                )
+                                Spacer(modifier = Modifier.height(1.dp))
+                                Text(
+                                    text = dateFormat.format(connection.birthday),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        }
+
+                        // Fixed icon column on the right - always in same horizontal position
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.Top,
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            // Phone row icons - aligned with phone number text
+                            if (connection.contactPhoneNumber != null) {
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.padding(top = 20.dp) // Align with phone number text (after header + spacing)
+                                ) {
+                                    // Show call icon if method allows
+                                    if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
+                                        connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                                    ) {
+                                        IconButton(
+                                            onClick = onCallClick,
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Phone,
+                                                contentDescription = "Call",
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
+                                    // Show message icon if method allows
+                                    if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
+                                        connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH
+                                    ) {
+                                        IconButton(
+                                            onClick = onMessageClick,
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Send,
+                                                contentDescription = "Message",
+                                                tint = MaterialTheme.colorScheme.primary,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Email row icon - aligned with email text
+                            if (connection.contactEmail != null) {
+                                // Calculate padding to align icon with email text (not header)
+                                // Phone icons align at 20dp (with phone number text)
+                                // Email icon needs: phone section + gap + email header + spacing
+                                val emailTopPadding = if (connection.contactPhoneNumber != null) {
+                                    // Phone icons at 20dp align with phone text
+                                    // Add: phone header (~12dp) + spacing (1dp) + phone text (~20dp) + gap (4dp) + email header (~12dp) + spacing (1dp)
+                                    // Total: 20 + 12 + 1 + 20 + 4 + 12 + 1 = 70dp
+                                    70.dp
+                                } else {
+                                    // No phone: align with email text directly
+                                    // Name (~24dp) + spacer (4dp) + email header (~12dp) + spacing (1dp) = ~41dp
+                                    // But to match phone icon positioning style, use similar calculation
+                                    20.dp + 12.dp + 1.dp // = 33dp, but let's use 20dp to match phone icon position
+                                }
+                                
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.padding(top = emailTopPadding)
+                                ) {
+                                    // Always show email icon when email exists
+                                    IconButton(
+                                        onClick = onEmailClick ?: {},
+                                        modifier = Modifier.size(32.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Email,
+                                            contentDescription = "Email",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.width(12.dp))
                 }
-                
-                Column(modifier = Modifier.weight(1f)) {
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Next reminder
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
                     Text(
-                        text = connection.contactName,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+                        text = "Next:",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    Text(
+                        text = dateFormat.format(connection.nextReminderDate),
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                // Last contacted with relative time
+                if (connection.lastContactedDate != null) {
                     Spacer(modifier = Modifier.height(4.dp))
-                    if (connection.contactPhoneNumber != null) {
-                        Text(
-                            text = connection.contactPhoneNumber,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    if (connection.contactEmail != null) {
-                        if (connection.contactPhoneNumber != null) {
-                            Spacer(modifier = Modifier.height(2.dp))
-                        }
-                        Text(
-                            text = connection.contactEmail,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Next reminder
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "Next:",
-                            style = MaterialTheme.typography.bodySmall,
+                            text = "Last:",
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = dateFormat.format(connection.nextReminderDate),
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium
+                            text = relativeTimeText ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium,
+                            color = indicatorColor
                         )
                     }
-                    
-                    // Last contacted with relative time
-                    if (connection.lastContactedDate != null) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "Last:",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Text(
-                                text = TimeFormatter.formatRelativeTime(connection.lastContactedDate),
-                                style = MaterialTheme.typography.bodySmall,
-                                fontWeight = FontWeight.Medium,
-                                color = indicatorColor
-                            )
-                        }
-                    } else {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Never contacted",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.error,
-                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                        )
-                    }
+                } else {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Never contacted",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.error,
+                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                    )
                 }
-                
-                // Action buttons column
-                Column(
-                    horizontalAlignment = Alignment.End,
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+
+                // Birthday (already shown in main content area, so remove duplicate)
+            }
+
+            // Mark complete button (if due today) - positioned at top right
+            if (connection.isDueToday) {
+                IconButton(
+                    onClick = ::handleMarkComplete,
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(40.dp)
+                        .scale(checkmarkScaleAnim.value)
                 ) {
-                    // Mark complete button (if due today)
-                    if (connection.isDueToday) {
-                        IconButton(
-                            onClick = onMarkComplete,
-                            modifier = Modifier.size(40.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.CheckCircle,
-                                contentDescription = "Mark as Contacted",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    
-                    // Contact method buttons (only show if available)
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        // Show call button only if phone number exists and method allows it
-                        if (connection.contactPhoneNumber != null &&
-                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
-                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
-                        ) {
-                            IconButton(
-                                onClick = onCallClick,
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Phone,
-                                    contentDescription = "Call",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                        // Show message button only if phone number exists and method allows it
-                        if (connection.contactPhoneNumber != null &&
-                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
-                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
-                        ) {
-                            IconButton(
-                                onClick = onMessageClick,
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Send,
-                                    contentDescription = "Message",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                        // Show email button only if email exists and method allows it
-                        if (connection.contactEmail != null &&
-                            (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.EMAIL ||
-                             connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
-                        ) {
-                            IconButton(
-                                onClick = onEmailClick ?: {},
-                                modifier = Modifier.size(40.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Email,
-                                    contentDescription = "Email",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
-                    }
+                    Icon(
+                        imageVector = if (checkmarkState == 2) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
+                        contentDescription = "Mark as Contacted",
+                        tint = checkmarkColor
+                    )
                 }
             }
         }

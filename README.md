@@ -13,19 +13,24 @@ A contacts-based reminder app for Android built with Kotlin and Jetpack Compose.
 
 ### Visual Features
 - **Visual Indicators**: Color-coded contacts based on last contact time:
-  - 🟢 Green: Recently contacted (within 50% of reminder frequency)
-  - 🟡 Yellow: Medium time since contact (within 100% of reminder frequency)
-  - 🔴 Red: Long time since contact (over 100% of reminder frequency or never contacted)
+  - 🟢 Green: Contacted within your reminder frequency (not overdue)
+  - 🟡 Yellow: Overdue by up to one reminder period
+  - 🔴 Red: Overdue by more than one reminder period or never contacted
 - **Profile Pictures**: Display contact photos from your device contacts (with placeholder for contacts without photos)
 - **Relative Time Display**: See when you last contacted someone in human-readable format (e.g., "2 days ago", "3 weeks ago")
-- **Conditional Icons**: Only show contact method buttons (call/message/email) when that method is available
+- **Action Icons**: Call, message, and email icons aligned with their respective contact information rows
+- **Animated Interactions**: Smooth animations for checkmark completion and navigation bar transitions
+- **Phone Number Formatting**: Automatic formatting with dashes (XXX-XXX-XXXX) for better readability
 
 ### Additional Features
-- **Birthday Tracking**: Optional birthday field for future birthday reminder features
+- **Birthday Tracking**: Display birthdays on connection cards with optional prompt on birthday
 - **Connection Details**: View full connection details, edit, or delete connections
+- **Contact Integration**: Deep link to view imported contacts in phone's Contacts app, or add custom connections to Contacts
+- **Input Validation**: Phone number and email validation with error messages
+- **Pull-to-Refresh**: Refresh connection lists by pulling down on Today or All tabs
 - **About Screen**: Built-in help and explanation of the app's purpose
 - **Splash Screen**: Beautiful welcome screen on app launch
-- **Scrollable Forms**: Easy-to-use scrollable add/edit screens
+- **Scrollable Forms**: Easy-to-use scrollable add/edit screens with toolbar save button
 
 ## Tech Stack
 
@@ -51,10 +56,34 @@ The app requires the following permissions:
 - `READ_CONTACTS`: To access your device contacts and import contact information
 - `CALL_PHONE`: To make calls directly from the app
 - `SEND_SMS`: To send messages directly from the app (optional - messages can be sent via system apps without this permission)
+- `POST_NOTIFICATIONS`: To show reminder notifications (Android 13+)
+- `SCHEDULE_EXACT_ALARM`: To schedule exact alarm notifications
+- `USE_EXACT_ALARM`: To use exact alarm scheduling
 
 ## Recent Updates
 
-### Version 1.1 (Latest)
+### Version 1.2 (Latest)
+- ✨ Push notifications when reminders are due
+- ✨ Contact photo import from device contacts
+- ✨ Deep link to view contacts in phone's Contacts app
+- ✨ Add custom connections to phone's Contacts app
+- ✨ Birthday display with date formatting on connection cards
+- ✨ Phone number auto-formatting with dashes (XXX-XXX-XXXX)
+- ✨ Phone number input validation (digits only)
+- ✨ Email validation on input fields
+- ✨ Pull-to-refresh on Today and All tabs
+- 🎨 Color-coded card backgrounds (red/yellow/green based on contact status)
+- 🎨 Improved card layout with aligned action icons
+- 🎨 Animated checkmark with bounce effect when marking as contacted
+- 🎨 Animated navigation bar indicator
+- 🎨 Save button moved to toolbar with validation
+- 🎨 Headers for Phone and Email fields on cards
+- 🐛 Fixed clipping issues under toolbar
+- 🐛 Fixed custom days input field handling
+- 🐛 Fixed icon alignment on connection cards
+- 📱 Database schema updated to version 4
+
+### Version 1.1
 - ✨ Added splash screen with app branding
 - ✨ Added About tab with app explanation and usage guide
 - ✨ Email support as a contact method

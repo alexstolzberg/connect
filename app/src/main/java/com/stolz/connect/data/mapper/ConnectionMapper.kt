@@ -25,6 +25,7 @@ fun ScheduledConnectionEntity.toDomain(): ScheduledConnection {
         nextReminderDate = nextReminderDate,
         notes = notes,
         birthday = birthday,
+        promptOnBirthday = promptOnBirthday,
         createdAt = createdAt,
         isActive = isActive
     )
@@ -50,6 +51,7 @@ fun ScheduledConnection.toEntity(): ScheduledConnectionEntity {
         nextReminderDate = nextReminderDate,
         notes = notes,
         birthday = birthday,
+        promptOnBirthday = promptOnBirthday,
         createdAt = createdAt,
         isActive = isActive
     )

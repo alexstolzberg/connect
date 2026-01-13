@@ -52,6 +52,9 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     
+    // Material library for pull-to-refresh
+    implementation("androidx.compose.material:material:1.5.4")
+    
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
@@ -73,6 +76,9 @@ dependencies {
     
     // Coil for image loading
     implementation(libs.coil.compose)
+    
+    // WorkManager for notifications
+    implementation(libs.work.runtime.ktx)
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -6,6 +6,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -19,9 +22,12 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.material.ExperimentalMaterialApi
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import com.stolz.connect.platform.ContactHelper
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun AllScreen(
     onAddClick: () -> Unit,
@@ -63,6 +69,20 @@ fun AllScreen(
         }
     }
     
+    var isRefreshing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val pullRefreshState = rememberPullRefreshState(
+        refreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            viewModel.refreshConnections()
+            scope.launch {
+                delay(800)
+                isRefreshing = false
+            }
+        }
+    )
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -75,46 +95,67 @@ fun AllScreen(
             }
         }
     ) { paddingValues ->
-        if (uiState.allConnections.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "No connections yet.\nTap the + button to add one.",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    bottom = paddingValues.calculateBottomPadding()
                 )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(
-                    items = uiState.allConnections,
-                    key = { it.id }
-                ) { connection ->
-                    ConnectionItem(
-                        connection = connection,
-                        isHighlighted = connection.isDueToday,
-                        onClick = { onConnectionClick(connection.id) },
-                        onCallClick = { 
-                            connection.contactPhoneNumber?.let { handleCallClick(it) }
-                        },
-                        onMessageClick = {
-                            connection.contactPhoneNumber?.let { ContactHelper.sendMessage(context, it) }
-                        },
-                        onEmailClick = {
-                            connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
-                        },
-                        onMarkComplete = { viewModel.markAsContacted(connection) }
+        ) {
+            if (uiState.allConnections.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No connections yet.\nTap the + button to add one.",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .pullRefresh(pullRefreshState)
+                ) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            top = paddingValues.calculateTopPadding(),
+                            start = 16.dp,
+                            end = 16.dp,
+                            bottom = 8.dp
+                        ),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(
+                            items = uiState.allConnections,
+                            key = { it.id }
+                        ) { connection ->
+                            ConnectionItem(
+                                connection = connection,
+                                isHighlighted = connection.isDueToday,
+                                onClick = { onConnectionClick(connection.id) },
+                                onCallClick = { 
+                                    connection.contactPhoneNumber?.let { handleCallClick(it) }
+                                },
+                                onMessageClick = {
+                                    connection.contactPhoneNumber?.let { ContactHelper.sendMessage(context, it) }
+                                },
+                                onEmailClick = {
+                                    connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
+                                },
+                                onMarkComplete = { viewModel.markAsContacted(connection) }
+                            )
+                        }
+                    }
+                    PullRefreshIndicator(
+                        refreshing = isRefreshing,
+                        state = pullRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter)
                     )
                 }
             }
