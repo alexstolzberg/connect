@@ -65,7 +65,14 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.1 (Latest)
+### Version 1.3.2 (Latest)
+- 🏗️ Refactored ConnectionItemActions into reusable DataRow composable
+- 🏗️ Created Dimensions.kt for centralized spacing constants (xsmall, small, medium, large, xlarge)
+- 🏗️ Centralized connection status colors in ConnectionColors object
+- 🎨 Improved code maintainability with consistent spacing and color usage
+- ✨ Added DataRow composable with preview support for unified data row layout
+
+### Version 1.3.1
 - 🏗️ Refactored ConnectionItem into separate composable file for better code organization
 - 🐛 Fixed weight modifier issue in ConnectionItem layout
 - 🐛 Fixed FlowColumnScopeInstance compilation error
