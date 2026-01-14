@@ -65,7 +65,14 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.2 (Latest)
+### Version 1.3.3 (Latest)
+- 🎯 Reorganized "Today" view into an inbox-style layout with sections (Past Due, Today, Upcoming)
+- ✨ "Today" view now includes overdue items (not just items due today)
+- 📋 Added section headers to organize connections by urgency
+- 🎨 Improved UX with clearer organization of what needs attention
+- 📱 Updated query to show connections due in the next 7 days
+
+### Version 1.3.2
 - 🏗️ Refactored ConnectionItemActions into reusable DataRow composable
 - 🏗️ Created Dimensions.kt for centralized spacing constants (xsmall, small, medium, large, xlarge)
 - 🏗️ Centralized connection status colors in ConnectionColors object

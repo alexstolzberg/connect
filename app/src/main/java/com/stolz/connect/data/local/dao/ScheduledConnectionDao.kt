@@ -25,7 +25,7 @@ interface ScheduledConnectionDao {
     @Query("""
         SELECT * FROM scheduled_connections 
         WHERE isActive = 1 
-        AND date(datetime(nextReminderDate/1000, 'unixepoch', 'localtime')) = date('now', 'localtime')
+        AND date(datetime(nextReminderDate/1000, 'unixepoch', 'localtime')) <= date('now', 'localtime', '+7 days')
         ORDER BY nextReminderDate ASC
     """)
     fun getTodayConnections(): Flow<List<ScheduledConnectionEntity>>

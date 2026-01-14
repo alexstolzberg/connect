@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -65,9 +67,13 @@ class HomeViewModel @Inject constructor(
                     }
                 }
                 
+                // Organize today connections into sections
+                val todaySections = organizeIntoSections(filteredToday)
+                
                 HomeUiState(
                     allConnections = filteredAll,
-                    todayConnections = filteredToday
+                    todayConnections = filteredToday,
+                    todaySections = todaySections
                 )
             }.collect { state ->
                 android.util.Log.d("HomeViewModel", "Updating UI state with ${state.allConnections.size} connections")
@@ -101,9 +107,67 @@ class HomeViewModel @Inject constructor(
             connectionRepository.markAsContacted(connection)
         }
     }
+    
+    private fun organizeIntoSections(connections: List<ScheduledConnection>): List<TodayViewSection> {
+        val now = Date()
+        val calendar = Calendar.getInstance().apply {
+            time = now
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val todayStart = calendar.time
+        
+        val tomorrowCalendar = Calendar.getInstance().apply {
+            time = todayStart
+            add(Calendar.DAY_OF_MONTH, 1)
+        }
+        val tomorrowStart = tomorrowCalendar.time
+        
+        val pastDue = mutableListOf<ScheduledConnection>()
+        val today = mutableListOf<ScheduledConnection>()
+        val upcoming = mutableListOf<ScheduledConnection>()
+        
+        connections.forEach { connection ->
+            val reminderCalendar = Calendar.getInstance().apply {
+                time = connection.nextReminderDate
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val reminderStart = reminderCalendar.time
+            
+            when {
+                reminderStart.before(todayStart) -> pastDue.add(connection)
+                reminderStart.before(tomorrowStart) -> today.add(connection)
+                else -> upcoming.add(connection)
+            }
+        }
+        
+        val sections = mutableListOf<TodayViewSection>()
+        if (pastDue.isNotEmpty()) {
+            sections.add(TodayViewSection("Past Due", pastDue))
+        }
+        if (today.isNotEmpty()) {
+            sections.add(TodayViewSection("Today", today))
+        }
+        if (upcoming.isNotEmpty()) {
+            sections.add(TodayViewSection("Upcoming", upcoming))
+        }
+        
+        return sections
+    }
 }
+
+data class TodayViewSection(
+    val title: String,
+    val connections: List<ScheduledConnection>
+)
 
 data class HomeUiState(
     val allConnections: List<ScheduledConnection> = emptyList(),
-    val todayConnections: List<ScheduledConnection> = emptyList()
+    val todayConnections: List<ScheduledConnection> = emptyList(),
+    val todaySections: List<TodayViewSection> = emptyList()
 )

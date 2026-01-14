@@ -22,8 +22,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.stolz.connect.ui.theme.Dimensions
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -139,18 +141,20 @@ fun TodayScreen(
                     bottom = paddingValues.calculateBottomPadding()
                 )
         ) {
-            if (uiState.todayConnections.isEmpty()) {
+            val hasConnections = uiState.todaySections.any { it.connections.isNotEmpty() }
+            
+            if (!hasConnections) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
+                        .padding(Dimensions.xlarge),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = if (searchQuery.isNotBlank()) {
                             "No connections found matching \"$searchQuery\"."
                         } else {
-                            "No connections due today.\nTap the + button to add one."
+                            "No connections due in the next week.\nTap the + button to add one."
                         },
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -166,31 +170,45 @@ fun TodayScreen(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
                             top = paddingValues.calculateTopPadding(),
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = 16.dp
+                            start = Dimensions.medium,
+                            end = Dimensions.medium,
+                            bottom = Dimensions.medium
                         ),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                     ) {
-                        items(
-                            items = uiState.todayConnections,
-                            key = { it.id }
-                        ) { connection ->
-                            ConnectionItem(
-                                connection = connection,
-                                isHighlighted = true,
-                                onClick = { onConnectionClick(connection.id) },
-                                onCallClick = { 
-                                    connection.contactPhoneNumber?.let { handleCallClick(it) }
-                                },
-                                onMessageClick = {
-                                    connection.contactPhoneNumber?.let { ContactHelper.sendMessage(context, it) }
-                                },
-                                onEmailClick = {
-                                    connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
-                                },
-                                onMarkComplete = { viewModel.markAsContacted(connection) }
-                            )
+                        uiState.todaySections.forEach { section ->
+                            item(key = "header_${section.title}") {
+                                Text(
+                                    text = section.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(
+                                        top = Dimensions.medium,
+                                        bottom = Dimensions.xsmall
+                                    ),
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                            items(
+                                items = section.connections,
+                                key = { it.id }
+                            ) { connection ->
+                                ConnectionItem(
+                                    connection = connection,
+                                    isHighlighted = true,
+                                    onClick = { onConnectionClick(connection.id) },
+                                    onCallClick = { 
+                                        connection.contactPhoneNumber?.let { handleCallClick(it) }
+                                    },
+                                    onMessageClick = {
+                                        connection.contactPhoneNumber?.let { ContactHelper.sendMessage(context, it) }
+                                    },
+                                    onEmailClick = {
+                                        connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
+                                    },
+                                    onMarkComplete = { viewModel.markAsContacted(connection) }
+                                )
+                            }
                         }
                     }
                     PullRefreshIndicator(
