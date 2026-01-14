@@ -65,7 +65,13 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3 (Latest)
+### Version 1.3.1 (Latest)
+- 🏗️ Refactored ConnectionItem into separate composable file for better code organization
+- 🐛 Fixed weight modifier issue in ConnectionItem layout
+- 🐛 Fixed FlowColumnScopeInstance compilation error
+- 🎨 Improved code maintainability by extracting reusable components
+
+### Version 1.3
 - ✨ Dark mode support with theme selection (System Default, Light, Dark)
 - ✨ Settings screen replacing About tab
 - ✨ Search functionality on Today and All tabs (search by name, phone, or email)
