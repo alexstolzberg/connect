@@ -1,5 +1,6 @@
 package com.stolz.connect.ui.home
 
+import android.provider.CalendarContract
 import androidx.compose.animation.*
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -25,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.domain.model.ScheduledConnection
+import com.stolz.connect.ui.theme.ConnectionColors
+import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.util.ContactColorCategory
 import com.stolz.connect.util.PhoneNumberFormatter
 import com.stolz.connect.util.TimeFormatter
@@ -59,7 +62,7 @@ private fun rememberConnectionItemAnimationState(
         targetValue = when (checkmarkState) {
             0 -> Color.Gray
             1 -> Color.Gray
-            2 -> Color(0xFF4CAF50)
+            2 -> ConnectionColors.GreenIndicator
             else -> Color.Gray
         },
         animationSpec = tween(durationMillis = 200),
@@ -146,14 +149,14 @@ fun ConnectionItem(
     
     val colors = remember(colorCategory) {
         val indicatorColor = when (colorCategory) {
-            ContactColorCategory.GREEN -> Color(0xFF4CAF50)
-            ContactColorCategory.YELLOW -> Color(0xFFFFC107)
-            ContactColorCategory.RED -> Color(0xFFF44336)
+            ContactColorCategory.GREEN -> ConnectionColors.GreenIndicator
+            ContactColorCategory.YELLOW -> ConnectionColors.YellowIndicator
+            ContactColorCategory.RED -> ConnectionColors.RedIndicator
         }
         val backgroundColor = when (colorCategory) {
-            ContactColorCategory.GREEN -> Color(0xFFE8F5E9)
-            ContactColorCategory.YELLOW -> Color(0xFFFFF9C4)
-            ContactColorCategory.RED -> Color(0xFFFFEBEE)
+            ContactColorCategory.GREEN -> ConnectionColors.GreenBackground
+            ContactColorCategory.YELLOW -> ConnectionColors.YellowBackground
+            ContactColorCategory.RED -> ConnectionColors.RedBackground
         }
         Colors(indicatorColor, backgroundColor)
     }
@@ -178,7 +181,7 @@ fun ConnectionItem(
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
             Column(
-                modifier = Modifier.padding(16.dp)
+                modifier = Modifier.padding(Dimensions.medium)
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -187,22 +190,14 @@ fun ConnectionItem(
                 ) {
                     ConnectionItemAvatar(connection)
                     
-                    Row(
-                        modifier = Modifier.weight(1f),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        ConnectionItemContent(
-                            connection = connection,
-                            dateFormat = dateFormat,
-                            modifier = Modifier.weight(1f)
-                        )
-                        ConnectionItemActions(
-                            connection = connection,
-                            onCallClick = onCallClick,
-                            onMessageClick = onMessageClick,
-                            onEmailClick = onEmailClick
-                        )
-                    }
+                    ConnectionItemContent(
+                        connection = connection,
+                        dateFormat = dateFormat,
+                        onCallClick = onCallClick,
+                        onMessageClick = onMessageClick,
+                        onEmailClick = onEmailClick,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 
                 Spacer(modifier = Modifier.height(6.dp))
@@ -249,7 +244,7 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
                 .clip(MaterialTheme.shapes.medium),
             contentScale = ContentScale.Crop
         )
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimensions.small))
     } else {
         Surface(
             modifier = Modifier.size(40.dp),
@@ -261,11 +256,11 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(Dimensions.large)
                 )
             }
         }
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(Dimensions.small))
     }
 }
 
@@ -273,9 +268,12 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
 private fun ConnectionItemContent(
     connection: ScheduledConnection,
     dateFormat: SimpleDateFormat,
+    onCallClick: () -> Unit,
+    onMessageClick: () -> Unit,
+    onEmailClick: (() -> Unit)?,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
+    Column(modifier = modifier.padding(start = Dimensions.small)) {
         Text(
             text = connection.contactName,
             style = MaterialTheme.typography.titleLarge,
@@ -284,137 +282,62 @@ private fun ConnectionItemContent(
         Spacer(modifier = Modifier.height(4.dp))
         
         if (connection.contactPhoneNumber != null) {
-            Column {
-                Text(
-                    text = "Phone",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(1.dp))
-                Text(
-                    text = PhoneNumberFormatter.format(connection.contactPhoneNumber),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            val phoneActions = mutableListOf<DataRowAction>()
+            if (connection.preferredMethod == ConnectionMethod.CALL ||
+                connection.preferredMethod == ConnectionMethod.BOTH
+            ) {
+                phoneActions.add(
+                    DataRowAction(
+                        icon = Icons.Default.Phone,
+                        contentDescription = "Call",
+                        onClick = onCallClick
+                    )
                 )
             }
+            if (connection.preferredMethod == ConnectionMethod.MESSAGE ||
+                connection.preferredMethod == ConnectionMethod.BOTH
+            ) {
+                phoneActions.add(
+                    DataRowAction(
+                        icon = Icons.Default.Send,
+                        contentDescription = "Message",
+                        onClick = onMessageClick
+                    )
+                )
+            }
+            
+            DataRow(
+                label = "Phone",
+                value = PhoneNumberFormatter.format(connection.contactPhoneNumber),
+                actions = phoneActions
+            )
         }
         
         if (connection.contactEmail != null) {
             if (connection.contactPhoneNumber != null) {
                 Spacer(modifier = Modifier.height(3.dp))
             }
-            Column {
-                Text(
-                    text = "Email",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
+            DataRow(
+                label = "Email",
+                value = connection.contactEmail,
+                actions = listOf(
+                    DataRowAction(
+                        icon = Icons.Default.Email,
+                        contentDescription = "Email",
+                        onClick = onEmailClick ?: {}
+                    )
                 )
-                Spacer(modifier = Modifier.height(1.dp))
-                Text(
-                    text = connection.contactEmail,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+            )
         }
         
         if (connection.birthday != null) {
             if (connection.contactPhoneNumber != null || connection.contactEmail != null) {
                 Spacer(modifier = Modifier.height(3.dp))
             }
-            Column {
-                Text(
-                    text = "Birthday",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontWeight = FontWeight.Medium
-                )
-                Spacer(modifier = Modifier.height(1.dp))
-                Text(
-                    text = dateFormat.format(connection.birthday),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ConnectionItemActions(
-    connection: ScheduledConnection,
-    onCallClick: () -> Unit,
-    onMessageClick: () -> Unit,
-    onEmailClick: (() -> Unit)?
-) {
-    Column(
-        horizontalAlignment = Alignment.End,
-        verticalArrangement = Arrangement.Top,
-        modifier = Modifier.padding(start = 8.dp)
-    ) {
-        if (connection.contactPhoneNumber != null) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(top = 19.dp)
-            ) {
-                if (connection.preferredMethod == ConnectionMethod.CALL ||
-                    connection.preferredMethod == ConnectionMethod.BOTH
-                ) {
-                    IconButton(
-                        onClick = onCallClick,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Phone,
-                            contentDescription = "Call",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-                if (connection.preferredMethod == ConnectionMethod.MESSAGE ||
-                    connection.preferredMethod == ConnectionMethod.BOTH
-                ) {
-                    IconButton(
-                        onClick = onMessageClick,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = "Message",
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-        }
-        
-        if (connection.contactEmail != null) {
-            val emailTopPadding = if (connection.contactPhoneNumber != null) {
-                68.dp
-            } else {
-                19.dp
-            }
-            
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(top = emailTopPadding)
-            ) {
-                IconButton(
-                    onClick = onEmailClick ?: {},
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Email,
-                        contentDescription = "Email",
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
+            DataRow(
+                label = "Birthday",
+                value = dateFormat.format(connection.birthday)
+            )
         }
     }
 }
