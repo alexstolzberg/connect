@@ -11,6 +11,7 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.stolz.connect.data.preferences.ThemeMode
 
 private val DarkColorScheme = darkColorScheme(
     primary = ConnectPrimary,
@@ -55,4 +56,21 @@ fun ConnectTheme(
         typography = Typography,
         content = content
     )
+}
+
+@Composable
+fun ConnectTheme(
+    themeMode: ThemeMode,
+    // Dynamic color is available on Android 12+
+    dynamicColor: Boolean = true,
+    content: @Composable () -> Unit
+) {
+    val systemDarkTheme = isSystemInDarkTheme()
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> systemDarkTheme
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    
+    ConnectTheme(darkTheme = darkTheme, dynamicColor = dynamicColor, content = content)
 }

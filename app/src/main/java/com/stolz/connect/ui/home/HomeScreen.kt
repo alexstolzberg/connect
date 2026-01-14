@@ -300,7 +300,7 @@ fun ConnectionItem(
         ),
         label = "item_offset"
     )
-
+    
     // Auto-refresh timer for relative time display (updates every minute)
     var refreshTrigger by remember { mutableStateOf(0) }
     LaunchedEffect(Unit) {
@@ -335,13 +335,13 @@ fun ConnectionItem(
             onMarkComplete()
         }
     }
-
+    
     // Get color category based on last contacted date
     val colorCategory = TimeFormatter.getLastContactedColorCategory(
         connection.lastContactedDate,
         connection.reminderFrequencyDays
     )
-
+    
     // Determine border/indicator color and background color
     val indicatorColor = when (colorCategory) {
         ContactColorCategory.GREEN -> Color(0xFF4CAF50) // Green
@@ -354,7 +354,7 @@ fun ConnectionItem(
         ContactColorCategory.YELLOW -> Color(0xFFFFF9C4) // Light yellow
         ContactColorCategory.RED -> Color(0xFFFFEBEE) // Light red
     }
-
+    
     // Use refreshTrigger to force recomposition and recalculate relative time
     val relativeTimeText = remember(refreshTrigger, connection.lastContactedDate) {
         if (connection.lastContactedDate != null) {
@@ -363,7 +363,7 @@ fun ConnectionItem(
             null
         }
     }
-
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -379,55 +379,55 @@ fun ConnectionItem(
         )
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(16.dp)
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    // Profile picture or placeholder
-                    if (connection.contactPhotoUri != null) {
-                        AsyncImage(
-                            model = connection.contactPhotoUri,
-                            contentDescription = connection.contactName,
-                            modifier = Modifier
+                // Profile picture or placeholder
+                if (connection.contactPhotoUri != null) {
+                    AsyncImage(
+                        model = connection.contactPhotoUri,
+                        contentDescription = connection.contactName,
+                        modifier = Modifier
                                 .size(40.dp)
-                                .clip(MaterialTheme.shapes.medium),
-                            contentScale = ContentScale.Crop
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                    } else {
-                        Surface(
+                            .clip(MaterialTheme.shapes.medium),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                } else {
+                    Surface(
                             modifier = Modifier.size(40.dp),
-                            shape = MaterialTheme.shapes.medium,
-                            color = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Icon(
-                                    imageVector = Icons.Default.Person,
-                                    contentDescription = null,
+                        shape = MaterialTheme.shapes.medium,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = null,
                                     tint = MaterialTheme.colorScheme.onPrimaryContainer,
                                     modifier = Modifier.size(24.dp)
-                                )
-                            }
+                            )
                         }
-                        Spacer(modifier = Modifier.width(12.dp))
                     }
-
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+                
                     Row(
                         modifier = Modifier.weight(1f),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = connection.contactName,
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = connection.contactName,
                                 style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            if (connection.contactPhoneNumber != null) {
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    if (connection.contactPhoneNumber != null) {
                                 Column {
                                     Text(
                                         text = "Phone",
@@ -436,16 +436,16 @@ fun ConnectionItem(
                                         fontWeight = FontWeight.Medium
                                     )
                                     Spacer(modifier = Modifier.height(1.dp))
-                                    Text(
+                        Text(
                                         text = PhoneNumberFormatter.format(connection.contactPhoneNumber),
                                         style = MaterialTheme.typography.bodyLarge,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                                 }
-                            }
-                            if (connection.contactEmail != null) {
-                                if (connection.contactPhoneNumber != null) {
-                                    Spacer(modifier = Modifier.height(4.dp))
+                    }
+                    if (connection.contactEmail != null) {
+                        if (connection.contactPhoneNumber != null) {
+                                    Spacer(modifier = Modifier.height(3.dp))
                                 }
                                 Column {
                                     Text(
@@ -455,8 +455,8 @@ fun ConnectionItem(
                                         fontWeight = FontWeight.Medium
                                     )
                                     Spacer(modifier = Modifier.height(1.dp))
-                                    Text(
-                                        text = connection.contactEmail,
+                        Text(
+                            text = connection.contactEmail,
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
@@ -464,7 +464,7 @@ fun ConnectionItem(
                             }
                         if (connection.birthday != null) {
                             if (connection.contactPhoneNumber != null || connection.contactEmail != null) {
-                                Spacer(modifier = Modifier.height(4.dp))
+                                Spacer(modifier = Modifier.height(3.dp))
                             }
                             Column {
                                 Text(
@@ -477,8 +477,8 @@ fun ConnectionItem(
                                 Text(
                                     text = dateFormat.format(connection.birthday),
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                             }
                         }
                         }
@@ -493,7 +493,7 @@ fun ConnectionItem(
                             if (connection.contactPhoneNumber != null) {
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    modifier = Modifier.padding(top = 20.dp) // Align with phone number text (after header + spacing)
+                                    modifier = Modifier.padding(top = 19.dp) // Align with phone number text (after header + spacing)
                                 ) {
                                     // Show call icon if method allows
                                     if (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
@@ -532,19 +532,19 @@ fun ConnectionItem(
 
                             // Email row icon - aligned with email text
                             if (connection.contactEmail != null) {
-                                // Calculate padding to align icon with email text (not header)
-                                // Phone icons align at 20dp (with phone number text)
-                                // Email icon needs: phone section + gap + email header + spacing
+                                // Calculate padding to align icon with email text
+                                // Phone icons are at 19dp (aligned with phone number text)
+                                // Email icon should align with email text, which is:
+                                // - If phone exists: phone section (header + spacing + text) + gap + email header + spacing
+                                // - If no phone: name + spacer + email header + spacing
                                 val emailTopPadding = if (connection.contactPhoneNumber != null) {
-                                    // Phone icons at 20dp align with phone text
-                                    // Add: phone header (~12dp) + spacing (1dp) + phone text (~20dp) + gap (4dp) + email header (~12dp) + spacing (1dp)
-                                    // Total: 20 + 12 + 1 + 20 + 4 + 12 + 1 = 70dp
-                                    70.dp
+                                    // Phone icons at 19dp, then add:
+                                    // Phone header (~12dp) + spacing (1dp) + phone text (~20dp) + gap (3dp) + email header (~12dp) + spacing (1dp)
+                                    // = 19 + 12 + 1 + 20 + 3 + 12 + 1 = 68dp
+                                    68.dp
                                 } else {
-                                    // No phone: align with email text directly
-                                    // Name (~24dp) + spacer (4dp) + email header (~12dp) + spacing (1dp) = ~41dp
-                                    // But to match phone icon positioning style, use similar calculation
-                                    20.dp + 12.dp + 1.dp // = 33dp, but let's use 20dp to match phone icon position
+                                    // No phone: same offset as phone icons would be (19dp from name)
+                                    19.dp
                                 }
                                 
                                 Row(
@@ -569,69 +569,69 @@ fun ConnectionItem(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Next reminder
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = "Next:",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Text(
-                        text = dateFormat.format(connection.nextReminderDate),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.Medium
-                    )
-                }
-
-                // Last contacted with relative time
-                if (connection.lastContactedDate != null) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(6.dp))
+                    
+                    // Next reminder
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "Last:",
-                            style = MaterialTheme.typography.bodyMedium,
+                            text = "Next:",
+                        style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = relativeTimeText ?: "",
-                            style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Medium,
-                            color = indicatorColor
+                            text = dateFormat.format(connection.nextReminderDate),
+                        style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.Medium
                         )
                     }
-                } else {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Never contacted",
+                    
+                    // Last contacted with relative time
+                    if (connection.lastContactedDate != null) {
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Text(
+                                text = "Last:",
+                            style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = relativeTimeText ?: "",
+                            style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = FontWeight.Medium,
+                                color = indicatorColor
+                            )
+                        }
+                    } else {
+                        Spacer(modifier = Modifier.height(3.dp))
+                        Text(
+                            text = "Never contacted",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
-                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                    )
-                }
+                            color = MaterialTheme.colorScheme.error,
+                            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                        )
+                    }
 
                 // Birthday (already shown in main content area, so remove duplicate)
             }
 
             // Mark complete button (if due today) - positioned at top right
-            if (connection.isDueToday) {
-                IconButton(
+                    if (connection.isDueToday) {
+                        IconButton(
                     onClick = ::handleMarkComplete,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .size(40.dp)
                         .scale(checkmarkScaleAnim.value)
-                ) {
-                    Icon(
+                        ) {
+                            Icon(
                         imageVector = if (checkmarkState == 2) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
-                        contentDescription = "Mark as Contacted",
+                                contentDescription = "Mark as Contacted",
                         tint = checkmarkColor
                     )
                 }

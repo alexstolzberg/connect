@@ -375,15 +375,32 @@ fun AddEditScreen(
             // Date picker dialog
             if (showDatePicker) {
                 val datePickerState = rememberDatePickerState(
-                    initialSelectedDateMillis = uiState.birthday?.time
+                    initialSelectedDateMillis = uiState.birthday?.let { birthday ->
+                        // Convert Date to Calendar and normalize to local midnight for display
+                        Calendar.getInstance().apply {
+                            time = birthday
+                            set(Calendar.HOUR_OF_DAY, 0)
+                            set(Calendar.MINUTE, 0)
+                            set(Calendar.SECOND, 0)
+                            set(Calendar.MILLISECOND, 0)
+                        }.timeInMillis
+                    }
                 )
                 DatePickerDialog(
                     onDismissRequest = { showDatePicker = false },
                     confirmButton = {
                         TextButton(
                             onClick = {
-                                datePickerState.selectedDateMillis?.let {
-                                    viewModel.updateBirthday(Date(it))
+                                datePickerState.selectedDateMillis?.let { millis ->
+                                    // Normalize to midnight in local timezone to avoid timezone issues
+                                    val calendar = Calendar.getInstance().apply {
+                                        timeInMillis = millis
+                                        set(Calendar.HOUR_OF_DAY, 0)
+                                        set(Calendar.MINUTE, 0)
+                                        set(Calendar.SECOND, 0)
+                                        set(Calendar.MILLISECOND, 0)
+                                    }
+                                    viewModel.updateBirthday(calendar.time)
                                 }
                                 showDatePicker = false
                             }

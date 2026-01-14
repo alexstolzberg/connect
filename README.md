@@ -28,7 +28,10 @@ A contacts-based reminder app for Android built with Kotlin and Jetpack Compose.
 - **Contact Integration**: Deep link to view imported contacts in phone's Contacts app, or add custom connections to Contacts
 - **Input Validation**: Phone number and email validation with error messages
 - **Pull-to-Refresh**: Refresh connection lists by pulling down on Today or All tabs
-- **About Screen**: Built-in help and explanation of the app's purpose
+- **Search Functionality**: Search connections by name, phone number, or email across Today and All tabs
+- **Dark Mode**: Choose between System Default, Light, or Dark theme in Settings
+- **Settings Screen**: Centralized settings with theme selection and app information
+- **About Screen**: Built-in help and explanation of the app's purpose (accessible from Settings)
 - **Splash Screen**: Beautiful welcome screen on app launch
 - **Scrollable Forms**: Easy-to-use scrollable add/edit screens with toolbar save button
 
@@ -62,7 +65,16 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.2 (Latest)
+### Version 1.3 (Latest)
+- ✨ Dark mode support with theme selection (System Default, Light, Dark)
+- ✨ Settings screen replacing About tab
+- ✨ Search functionality on Today and All tabs (search by name, phone, or email)
+- ✨ About screen accessible from Settings
+- 🐛 Fixed birthday date picker timezone issue (dates now display correctly)
+- 🐛 Fixed various icon reference issues in Settings screen
+- 🎨 Improved navigation structure with Settings as main tab
+
+### Version 1.2
 - ✨ Push notifications when reminders are due
 - ✨ Contact photo import from device contacts
 - ✨ Deep link to view contacts in phone's Contacts app
@@ -104,13 +116,12 @@ The app requires the following permissions:
 ## Future Plans
 
 - iOS version using Compose Multiplatform
-- Push notifications for reminders
 - Birthday reminders and notifications
-- Search and filter functionality
 - Statistics and analytics
 - Export/import connections
 - Custom reminder patterns
 - Contact groups/categories
+- Reminder time picker (set specific time for notifications)
 
 ## Development
 

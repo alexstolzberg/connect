@@ -17,6 +17,9 @@ class HomeViewModel @Inject constructor(
     private val connectionRepository: ConnectionRepository
 ) : ViewModel() {
     
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
     
@@ -27,8 +30,9 @@ class HomeViewModel @Inject constructor(
             combine(
                 connectionRepository.getAllActiveConnections(),
                 connectionRepository.getTodayConnections(),
-                connectionRepository.getAllConnections() // Debug
-            ) { allConnections, todayConnections, allDebug ->
+                connectionRepository.getAllConnections(), // Debug
+                _searchQuery
+            ) { allConnections, todayConnections, allDebug, query ->
                 android.util.Log.d("HomeViewModel", "Flow emitted - All: ${allConnections.size}, Today: ${todayConnections.size}, Debug (all): ${allDebug.size}")
                 if (allDebug.isNotEmpty() && allConnections.isEmpty()) {
                     android.util.Log.w("HomeViewModel", "WARNING: Found ${allDebug.size} connections in DB but 0 active ones!")
@@ -39,15 +43,41 @@ class HomeViewModel @Inject constructor(
                 allConnections.forEach { conn ->
                     android.util.Log.d("HomeViewModel", "Connection: ${conn.contactName}, ID: ${conn.id}, Active: ${conn.isActive}, NextDate: ${conn.nextReminderDate}")
                 }
+                
+                // Filter by search query if present
+                val filteredAll = if (query.isBlank()) {
+                    allConnections
+                } else {
+                    allConnections.filter { connection ->
+                        connection.contactName.contains(query, ignoreCase = true) ||
+                        connection.contactPhoneNumber?.contains(query, ignoreCase = true) == true ||
+                        connection.contactEmail?.contains(query, ignoreCase = true) == true
+                    }
+                }
+                
+                val filteredToday = if (query.isBlank()) {
+                    todayConnections
+                } else {
+                    todayConnections.filter { connection ->
+                        connection.contactName.contains(query, ignoreCase = true) ||
+                        connection.contactPhoneNumber?.contains(query, ignoreCase = true) == true ||
+                        connection.contactEmail?.contains(query, ignoreCase = true) == true
+                    }
+                }
+                
                 HomeUiState(
-                    allConnections = allConnections,
-                    todayConnections = todayConnections
+                    allConnections = filteredAll,
+                    todayConnections = filteredToday
                 )
             }.collect { state ->
                 android.util.Log.d("HomeViewModel", "Updating UI state with ${state.allConnections.size} connections")
                 _uiState.value = state
             }
         }
+    }
+    
+    fun setSearchQuery(query: String) {
+        _searchQuery.value = query
     }
     
     // Public function to refresh connections if needed

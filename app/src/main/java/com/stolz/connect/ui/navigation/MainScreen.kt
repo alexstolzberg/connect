@@ -3,8 +3,8 @@ package com.stolz.connect.ui.navigation
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,7 +21,7 @@ fun MainScreen(navController: NavHostController) {
     val selectedIndex = when (currentDestination?.route) {
         Screen.Today.route -> 0
         Screen.All.route -> 1
-        Screen.About.route -> 2
+        Screen.Settings.route -> 2
         else -> 0
     }
     
@@ -30,7 +30,7 @@ fun MainScreen(navController: NavHostController) {
             // Only show bottom bar on main tabs (not on detail/edit screens or splash)
             if (currentDestination?.route == Screen.Today.route || 
                 currentDestination?.route == Screen.All.route ||
-                currentDestination?.route == Screen.About.route) {
+                currentDestination?.route == Screen.Settings.route) {
                 AnimatedNavigationBar(
                     selectedIndex = selectedIndex,
                     onTabSelected = { index ->
@@ -46,8 +46,8 @@ fun MainScreen(navController: NavHostController) {
                                 }
                             }
                             2 -> {
-                                navController.navigate(Screen.About.route) {
-                                    popUpTo(Screen.About.route) { inclusive = true }
+                                navController.navigate(Screen.Settings.route) {
+                                    popUpTo(Screen.Settings.route) { inclusive = true }
                                 }
                             }
                         }
@@ -71,7 +71,7 @@ fun AnimatedNavigationBar(
     val tabs = listOf(
         TabItem("Today", Icons.Default.Home),
         TabItem("All", Icons.Default.List),
-        TabItem("About", Icons.Default.Info)
+        TabItem("Settings", Icons.Default.Settings)
     )
     
     NavigationBar {

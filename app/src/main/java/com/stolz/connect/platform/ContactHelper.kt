@@ -145,16 +145,38 @@ object ContactHelper {
                 contactId.toLong()
             )
             
-            // Get lookup URI for stable reference
-            val lookupUri = android.provider.ContactsContract.Contacts.getLookupUri(
-                context.contentResolver,
-                contactUri
+            // Get lookup key and build lookup URI
+            val cursor = context.contentResolver.query(
+                contactUri,
+                arrayOf(android.provider.ContactsContract.Contacts.LOOKUP_KEY),
+                null,
+                null,
+                null
             )
             
-            android.util.Log.d("ContactHelper", "Contact URI: $contactUri, Lookup URI: $lookupUri")
+            var finalUri: android.net.Uri? = null
             
-            // Use lookup URI if available, otherwise use contact URI
-            val finalUri = lookupUri ?: contactUri
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val lookupKeyIndex = it.getColumnIndex(android.provider.ContactsContract.Contacts.LOOKUP_KEY)
+                    if (lookupKeyIndex >= 0) {
+                        val lookupKey = it.getString(lookupKeyIndex)
+                        if (lookupKey != null) {
+                            finalUri = android.net.Uri.withAppendedPath(
+                                android.provider.ContactsContract.Contacts.CONTENT_LOOKUP_URI,
+                                lookupKey
+                            )
+                            android.util.Log.d("ContactHelper", "Using lookup URI: $finalUri")
+                        }
+                    }
+                }
+            }
+            
+            // Fallback to contact URI if lookup failed
+            if (finalUri == null) {
+                finalUri = contactUri
+                android.util.Log.d("ContactHelper", "Using contact URI: $finalUri")
+            }
             
             val intent = Intent(Intent.ACTION_VIEW).apply {
                 data = finalUri
@@ -169,8 +191,6 @@ object ContactHelper {
                 android.util.Log.d("ContactHelper", "Successfully started contact view activity")
             } else {
                 android.util.Log.e("ContactHelper", "No activity found to handle contact view")
-                // Fallback: try with tel: scheme if we have a phone number
-                // But we don't have phone number here, so just log the error
             }
         } catch (e: Exception) {
             android.util.Log.e("ContactHelper", "Failed to open contact: ${e.message}", e)

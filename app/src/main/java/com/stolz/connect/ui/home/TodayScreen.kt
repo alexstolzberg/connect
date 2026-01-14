@@ -11,6 +11,12 @@ import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,7 +41,9 @@ fun TodayScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
     val context = LocalContext.current
+    var searchActive by remember { mutableStateOf(false) }
     val lifecycleOwner = LocalLifecycleOwner.current
     
     // Refresh when screen resumes
@@ -86,7 +94,36 @@ fun TodayScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Today") }
+                title = { 
+                    if (searchActive) {
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = { viewModel.setSearchQuery(it) },
+                            placeholder = { Text("Search...") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent
+                            )
+                        )
+                    } else {
+                        Text("Today")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { 
+                        if (searchActive) {
+                            viewModel.setSearchQuery("")
+                        }
+                        searchActive = !searchActive 
+                    }) {
+                        Icon(
+                            imageVector = if (searchActive) Icons.Default.Close else Icons.Default.Search,
+                            contentDescription = if (searchActive) "Close Search" else "Search"
+                        )
+                    }
+                }
             )
         },
         floatingActionButton = {
@@ -110,7 +147,11 @@ fun TodayScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "No connections due today.\nTap the + button to add one.",
+                        text = if (searchQuery.isNotBlank()) {
+                            "No connections found matching \"$searchQuery\"."
+                        } else {
+                            "No connections due today.\nTap the + button to add one."
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

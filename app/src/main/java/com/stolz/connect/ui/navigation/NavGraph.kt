@@ -12,11 +12,13 @@ import com.stolz.connect.ui.about.AboutScreen
 import com.stolz.connect.ui.details.ConnectionDetailsScreen
 import com.stolz.connect.ui.home.AllScreen
 import com.stolz.connect.ui.home.TodayScreen
+import com.stolz.connect.ui.settings.SettingsScreen
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
     object Today : Screen("today")
     object All : Screen("all")
+    object Settings : Screen("settings")
     object About : Screen("about")
     object AddEdit : Screen("add_edit/{connectionId}") {
         fun createRoute(connectionId: Long? = null) = if (connectionId != null) {
@@ -72,8 +74,20 @@ fun NavGraph(
             )
         }
         
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateToAbout = {
+                    navController.navigate(Screen.About.route)
+                }
+            )
+        }
+        
         composable(Screen.About.route) {
-            AboutScreen()
+            AboutScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
+                }
+            )
         }
         
         composable(
