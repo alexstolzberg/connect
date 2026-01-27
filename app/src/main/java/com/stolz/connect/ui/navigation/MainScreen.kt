@@ -19,7 +19,7 @@ fun MainScreen(navController: NavHostController) {
     
     // Determine selected tab index
     val selectedIndex = when (currentDestination?.route) {
-        Screen.Today.route -> 0
+        Screen.Inbox.route -> 0
         Screen.All.route -> 1
         Screen.Settings.route -> 2
         else -> 0
@@ -28,7 +28,7 @@ fun MainScreen(navController: NavHostController) {
     Scaffold(
         bottomBar = {
             // Only show bottom bar on main tabs (not on detail/edit screens or splash)
-            if (currentDestination?.route == Screen.Today.route || 
+            if (currentDestination?.route == Screen.Inbox.route || 
                 currentDestination?.route == Screen.All.route ||
                 currentDestination?.route == Screen.Settings.route) {
                 AnimatedNavigationBar(
@@ -36,8 +36,8 @@ fun MainScreen(navController: NavHostController) {
                     onTabSelected = { index ->
                         when (index) {
                             0 -> {
-                                navController.navigate(Screen.Today.route) {
-                                    popUpTo(Screen.Today.route) { inclusive = true }
+                                navController.navigate(Screen.Inbox.route) {
+                                    popUpTo(Screen.Inbox.route) { inclusive = true }
                                 }
                             }
                             1 -> {
@@ -69,7 +69,7 @@ fun AnimatedNavigationBar(
     onTabSelected: (Int) -> Unit
 ) {
     val tabs = listOf(
-        TabItem("Today", Icons.Default.Home),
+        TabItem("Inbox", Icons.Default.Home),
         TabItem("All", Icons.Default.List),
         TabItem("Settings", Icons.Default.Settings)
     )

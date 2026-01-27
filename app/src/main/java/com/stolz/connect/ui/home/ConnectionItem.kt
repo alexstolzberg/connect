@@ -369,6 +369,17 @@ private fun ConnectionItemContent(
                 colorCategory = colorCategory
             )
         }
+        
+        if (connection.notes != null && connection.notes.isNotBlank()) {
+            if (connection.contactPhoneNumber != null || connection.contactEmail != null || connection.birthday != null) {
+                Spacer(modifier = Modifier.height(3.dp))
+            }
+            DataRow(
+                label = "Notes",
+                value = connection.notes,
+                colorCategory = colorCategory
+            )
+        }
     }
 }
 

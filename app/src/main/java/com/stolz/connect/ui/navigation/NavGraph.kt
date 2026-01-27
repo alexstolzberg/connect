@@ -11,12 +11,12 @@ import com.stolz.connect.ui.addedit.AddEditScreen
 import com.stolz.connect.ui.about.AboutScreen
 import com.stolz.connect.ui.details.ConnectionDetailsScreen
 import com.stolz.connect.ui.home.AllScreen
-import com.stolz.connect.ui.home.TodayScreen
+import com.stolz.connect.ui.home.InboxScreen
 import com.stolz.connect.ui.settings.SettingsScreen
 
 sealed class Screen(val route: String) {
     object Splash : Screen("splash")
-    object Today : Screen("today")
+    object Inbox : Screen("inbox")
     object All : Screen("all")
     object Settings : Screen("settings")
     object About : Screen("about")
@@ -45,15 +45,15 @@ fun NavGraph(
         composable(Screen.Splash.route) {
             com.stolz.connect.ui.splash.SplashScreen(
                 onNavigateToMain = {
-                    navController.navigate(Screen.Today.route) {
+                    navController.navigate(Screen.Inbox.route) {
                         popUpTo(Screen.Splash.route) { inclusive = true }
                     }
                 }
             )
         }
         
-        composable(Screen.Today.route) {
-            TodayScreen(
+        composable(Screen.Inbox.route) {
+            InboxScreen(
                 onAddClick = {
                     navController.navigate(Screen.AddEdit.createRoute(null))
                 },

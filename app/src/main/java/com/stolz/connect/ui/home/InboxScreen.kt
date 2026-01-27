@@ -37,7 +37,7 @@ import com.stolz.connect.platform.ContactHelper
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun TodayScreen(
+fun InboxScreen(
     onAddClick: () -> Unit,
     onConnectionClick: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
@@ -110,7 +110,7 @@ fun TodayScreen(
                             )
                         )
                     } else {
-                        Text("Today")
+                        Text("Inbox")
                     }
                 },
                 actions = {
@@ -141,7 +141,7 @@ fun TodayScreen(
                     bottom = paddingValues.calculateBottomPadding()
                 )
         ) {
-            val hasConnections = uiState.todaySections.any { it.connections.isNotEmpty() }
+            val hasConnections = uiState.inboxSections.any { it.connections.isNotEmpty() }
             
             if (!hasConnections) {
                 Box(
@@ -176,14 +176,14 @@ fun TodayScreen(
                         ),
                         verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                     ) {
-                        uiState.todaySections.forEach { section ->
+                        uiState.inboxSections.forEachIndexed { sectionIndex, section ->
                             item(key = "header_${section.title}") {
                                 Text(
                                     text = section.title,
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(
-                                        top = Dimensions.medium,
+                                        top = if (sectionIndex == 0) Dimensions.medium else Dimensions.large,
                                         bottom = Dimensions.xsmall
                                     ),
                                     color = MaterialTheme.colorScheme.primary

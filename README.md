@@ -65,7 +65,14 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.4 (Latest)
+### Version 1.3.5 (Latest)
+- 📬 Renamed "Today" tab to "Inbox" for better clarity
+- 📝 Added notes display on connection cards using DataRow format
+- 🎨 Improved section spacing in Inbox view for better visual organization
+- 🏗️ Refactored TodayScreen to InboxScreen with updated naming throughout codebase
+- ✨ Inbox sections now properly organized: Past Due, Today, Upcoming
+
+### Version 1.3.4
 - 🎨 Major dark theme color improvements for better contrast and readability
 - 🌑 Updated dark mode backgrounds: very dark green (0x0C3301), light yellow (d4d272), light red (d18a82)
 - ✨ Conditional text colors in dark mode: white text on dark backgrounds, dark text on light backgrounds

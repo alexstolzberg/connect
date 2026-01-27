@@ -67,13 +67,13 @@ class HomeViewModel @Inject constructor(
                     }
                 }
                 
-                // Organize today connections into sections
-                val todaySections = organizeIntoSections(filteredToday)
+                // Organize inbox connections into sections
+                val inboxSections = organizeIntoSections(filteredToday)
                 
                 HomeUiState(
                     allConnections = filteredAll,
                     todayConnections = filteredToday,
-                    todaySections = todaySections
+                    inboxSections = inboxSections
                 )
             }.collect { state ->
                 android.util.Log.d("HomeViewModel", "Updating UI state with ${state.allConnections.size} connections")
@@ -108,7 +108,7 @@ class HomeViewModel @Inject constructor(
         }
     }
     
-    private fun organizeIntoSections(connections: List<ScheduledConnection>): List<TodayViewSection> {
+    private fun organizeIntoSections(connections: List<ScheduledConnection>): List<InboxViewSection> {
         val now = Date()
         val calendar = Calendar.getInstance().apply {
             time = now
@@ -146,22 +146,22 @@ class HomeViewModel @Inject constructor(
             }
         }
         
-        val sections = mutableListOf<TodayViewSection>()
+        val sections = mutableListOf<InboxViewSection>()
         if (pastDue.isNotEmpty()) {
-            sections.add(TodayViewSection("Past Due", pastDue))
+            sections.add(InboxViewSection("Past Due", pastDue))
         }
         if (today.isNotEmpty()) {
-            sections.add(TodayViewSection("Today", today))
+            sections.add(InboxViewSection("Today", today))
         }
         if (upcoming.isNotEmpty()) {
-            sections.add(TodayViewSection("Upcoming", upcoming))
+            sections.add(InboxViewSection("Upcoming", upcoming))
         }
         
         return sections
     }
 }
 
-data class TodayViewSection(
+data class InboxViewSection(
     val title: String,
     val connections: List<ScheduledConnection>
 )
@@ -169,5 +169,5 @@ data class TodayViewSection(
 data class HomeUiState(
     val allConnections: List<ScheduledConnection> = emptyList(),
     val todayConnections: List<ScheduledConnection> = emptyList(),
-    val todaySections: List<TodayViewSection> = emptyList()
+    val inboxSections: List<InboxViewSection> = emptyList()
 )
