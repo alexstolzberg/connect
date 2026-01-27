@@ -8,7 +8,8 @@ A contacts-based reminder app for Android built with Kotlin and Jetpack Compose.
 - **Contact Management**: Pick contacts from your device or add custom contacts manually
 - **Scheduled Reminders**: Set up reminders with customizable frequencies (daily, weekly, monthly, or custom days)
 - **Multiple Contact Methods**: Support for phone calls, SMS messages, and email
-- **Smart Notifications**: View connections due today and all scheduled connections in separate tabs
+- **Inbox View**: View connections organized by urgency (Past Due, Today, Upcoming) in the Inbox tab
+- **All Connections**: View all scheduled connections in the All tab
 - **Quick Actions**: Mark as contacted, call, message, or email directly from the connection list
 
 ### Visual Features
