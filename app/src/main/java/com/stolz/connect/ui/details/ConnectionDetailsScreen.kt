@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -149,11 +151,18 @@ fun ConnectionDetailsScreen(
                     }
                 }
                 
+                // Check if item is snoozed
+                val isSnoozed = !connection.isPastDue && !connection.isDueToday && 
+                                connection.nextReminderDate.after(Date())
+                
                 // Get color category for visual indicator
-                val colorCategory = TimeFormatter.getLastContactedColorCategory(
+                // For snoozed items, always use green color (they're in upcoming, not overdue)
+                val baseColorCategory = TimeFormatter.getLastContactedColorCategory(
                     connection.lastContactedDate,
                     connection.reminderFrequencyDays
                 )
+                val colorCategory = if (isSnoozed) ContactColorCategory.GREEN else baseColorCategory
+                
                 val indicatorColor = when (colorCategory) {
                     ContactColorCategory.GREEN -> Color(0xFF4CAF50)
                     ContactColorCategory.YELLOW -> Color(0xFFFFC107)
@@ -212,10 +221,13 @@ fun ConnectionDetailsScreen(
                                     TextButton(
                                         onClick = {
                                             try {
-                                                android.util.Log.d("ConnectionDetails", "Opening contact with ID: ${connection.contactId}")
                                                 ContactHelper.openContactInPhone(context, connection.contactId)
                                             } catch (e: Exception) {
-                                                android.util.Log.e("ConnectionDetails", "Error opening contact", e)
+                                                android.widget.Toast.makeText(
+                                                    context,
+                                                    "Unable to open contact",
+                                                    android.widget.Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         }
                                     ) {
@@ -242,14 +254,12 @@ fun ConnectionDetailsScreen(
                                 }
                             }
                             if (connection.contactPhoneNumber != null) {
-                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = "Phone",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = FontWeight.Medium
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = PhoneNumberFormatter.format(connection.contactPhoneNumber),
                                     style = MaterialTheme.typography.titleMedium,
@@ -257,14 +267,12 @@ fun ConnectionDetailsScreen(
                                 )
                             }
                             if (connection.contactEmail != null) {
-                                Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = "Email",
                                     style = MaterialTheme.typography.labelMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     fontWeight = FontWeight.Medium
                                 )
-                                Spacer(modifier = Modifier.height(2.dp))
                                 Text(
                                     text = connection.contactEmail,
                                     style = MaterialTheme.typography.titleMedium,
@@ -274,12 +282,49 @@ fun ConnectionDetailsScreen(
                             
                             Divider()
                             
-                            InfoRow("Frequency", "${connection.reminderFrequencyDays} days")
-                            InfoRow("Method", connection.preferredMethod.name.lowercase().replaceFirstChar { it.uppercaseChar() })
                             InfoRow(
-                                "Next Reminder",
-                                dateFormat.format(connection.nextReminderDate)
+                                "Frequency", 
+                                if (connection.reminderFrequencyDays == 1) "1 day" else "${connection.reminderFrequencyDays} days"
                             )
+                            InfoRow(
+                                "Method", 
+                                when (connection.preferredMethod) {
+                                    com.stolz.connect.domain.model.ConnectionMethod.CALL -> "Call"
+                                    com.stolz.connect.domain.model.ConnectionMethod.MESSAGE -> "Message"
+                                    com.stolz.connect.domain.model.ConnectionMethod.EMAIL -> "Email"
+                                    com.stolz.connect.domain.model.ConnectionMethod.BOTH -> "No Preference"
+                                }
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Next Reminder",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = dateFormat.format(connection.nextReminderDate),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Medium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    if (isSnoozed) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Snooze,
+                                            contentDescription = "Snoozed",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                }
+                            }
                             if (connection.lastContactedDate != null) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),

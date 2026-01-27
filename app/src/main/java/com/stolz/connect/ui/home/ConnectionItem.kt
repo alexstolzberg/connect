@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.domain.model.ScheduledConnection
 import com.stolz.connect.ui.theme.ConnectionColors
 import com.stolz.connect.ui.theme.Dimensions
+import com.stolz.connect.ui.theme.AvatarColors
 import com.stolz.connect.util.ContactColorCategory
 import com.stolz.connect.util.PhoneNumberFormatter
 import com.stolz.connect.util.TimeFormatter
@@ -143,10 +145,16 @@ fun ConnectionItem(
         }
     }
     
-    val colorCategory = TimeFormatter.getLastContactedColorCategory(
+    // Check if item is snoozed (in upcoming section but was originally past due/today)
+    val isSnoozed = !connection.isPastDue && !connection.isDueToday && 
+                    connection.nextReminderDate.after(Date())
+    
+    // For snoozed items, always use green color (they're in upcoming, not overdue)
+    val baseColorCategory = TimeFormatter.getLastContactedColorCategory(
         connection.lastContactedDate,
         connection.reminderFrequencyDays
     )
+    val colorCategory = if (isSnoozed) ContactColorCategory.GREEN else baseColorCategory
     
     val isDarkTheme = isSystemInDarkTheme()
     val colors = remember(colorCategory, isDarkTheme) {
@@ -219,7 +227,8 @@ fun ConnectionItem(
                     dateFormat = dateFormat,
                     relativeTimeText = relativeTimeText,
                     indicatorColor = colors.indicatorColor,
-                    colorCategory = colorCategory
+                    colorCategory = colorCategory,
+                    isSnoozed = isSnoozed
                 )
             }
             
@@ -236,11 +245,11 @@ fun ConnectionItem(
                             onClick = onSnoozeClick,
                             modifier = Modifier.size(48.dp)
                         ) {
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = "Snooze",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                            Icon(
+                                imageVector = Icons.Outlined.Snooze,
+                                contentDescription = "Snooze",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
                         }
                     }
                     
@@ -280,21 +289,37 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
         )
         Spacer(modifier = Modifier.width(Dimensions.small))
     } else {
+        val avatarColor = if (connection.avatarColor != null) {
+            Color(connection.avatarColor)
+        } else {
+            AvatarColors.getColorForName(connection.contactName)
+        }
+        val initials = getInitials(connection.contactName)
+        
         Surface(
             modifier = Modifier.size(40.dp),
             shape = MaterialTheme.shapes.medium,
-            color = MaterialTheme.colorScheme.primaryContainer
+            color = avatarColor
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.Person,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.size(Dimensions.large)
+                Text(
+                    text = initials,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
                 )
             }
         }
         Spacer(modifier = Modifier.width(Dimensions.small))
+    }
+}
+
+private fun getInitials(name: String): String {
+    val parts = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
+    return when {
+        parts.isEmpty() -> "?"
+        parts.size == 1 -> parts[0].take(1).uppercase()
+        else -> "${parts[0].first()}${parts.last().first()}".uppercase()
     }
 }
 
@@ -409,7 +434,8 @@ private fun ConnectionItemMetadata(
     dateFormat: SimpleDateFormat,
     relativeTimeText: String?,
     indicatorColor: Color,
-    colorCategory: ContactColorCategory
+    colorCategory: ContactColorCategory,
+    isSnoozed: Boolean
 ) {
     val isDarkTheme = isSystemInDarkTheme()
     // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
@@ -431,11 +457,6 @@ private fun ConnectionItemMetadata(
         MaterialTheme.colorScheme.onSurface
     }
     
-    // Check if item is snoozed (in upcoming section but was originally past due/today)
-    // For now, we'll show snooze indicator if nextReminderDate is in future and item is not past due or today
-    val isSnoozed = !connection.isPastDue && !connection.isDueToday && 
-                    connection.nextReminderDate.after(Date())
-    
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -454,7 +475,7 @@ private fun ConnectionItemMetadata(
         // Show snooze indicator if item was snoozed
         if (isSnoozed) {
             Icon(
-                imageVector = Icons.Default.Refresh,
+                imageVector = Icons.Outlined.Snooze,
                 contentDescription = "Snoozed",
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(16.dp)

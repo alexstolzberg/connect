@@ -60,13 +60,23 @@ The app requires the following permissions:
 - `READ_CONTACTS`: To access your device contacts and import contact information
 - `CALL_PHONE`: To make calls directly from the app
 - `SEND_SMS`: To send messages directly from the app (optional - messages can be sent via system apps without this permission)
+- `CAMERA`: To take photos for contact avatars (optional - only requested when taking a photo)
 - `POST_NOTIFICATIONS`: To show reminder notifications (Android 13+)
 - `SCHEDULE_EXACT_ALARM`: To schedule exact alarm notifications
 - `USE_EXACT_ALARM`: To use exact alarm scheduling
 
 ## Recent Updates
 
-### Version 1.3.6 (Latest)
+### Version 1.3.7 (Latest)
+- 📸 Added camera permission handling for taking contact photos
+- 🎨 Improved avatar initials: Shows one letter for single names, two letters (first + last) when both names are present
+- 🎨 Avatar color selector: All colors now displayed in a grid layout (6 columns) for easier selection
+- 🎨 Avatar colors: Random color assigned initially, only changes when user explicitly selects a color
+- 🐛 Fixed scroll issue: First card in list no longer hidden under toolbar
+- 🐛 Fixed Floating Action Button visibility: Moved FAB to MainScreen Scaffold to avoid nested Scaffold issues
+- 🧹 Removed edit icon overlay from avatar (temporarily removed for future redesign)
+
+### Version 1.3.6
 - 🎨 New app icon: Broken cable design with gradient background and spark effect
 - 🎨 Updated splash screen to display app icon with matching gradient background
 - 🧹 Code cleanup: Removed unused imports, debug code, and unnecessary files

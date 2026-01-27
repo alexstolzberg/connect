@@ -54,6 +54,8 @@ dependencies {
     
     // Material library for pull-to-refresh
     implementation("androidx.compose.material:material:1.5.4")
+    // Rich Material icon set (filled/outlined/rounded/twotone/sharp)
+    implementation("androidx.compose.material:material-icons-extended")
     
     // Hilt
     implementation(libs.hilt.android)

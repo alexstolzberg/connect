@@ -122,19 +122,10 @@ fun AllScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
-                Icon(Icons.Default.Add, contentDescription = "Add Connection")
-            }
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    bottom = paddingValues.calculateBottomPadding()
-                )
+            modifier = Modifier.fillMaxSize()
         ) {
             if (uiState.allConnections.isEmpty()) {
                 Box(
@@ -162,7 +153,7 @@ fun AllScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
-                            top = paddingValues.calculateTopPadding(),
+                            top = paddingValues.calculateTopPadding() + 16.dp,
                             start = 16.dp,
                             end = 16.dp,
                             bottom = 8.dp

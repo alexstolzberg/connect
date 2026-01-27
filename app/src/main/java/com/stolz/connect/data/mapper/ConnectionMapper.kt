@@ -11,6 +11,7 @@ fun ScheduledConnectionEntity.toDomain(): ScheduledConnection {
         contactPhoneNumber = contactPhoneNumber,
         contactEmail = contactEmail,
         contactPhotoUri = contactPhotoUri,
+        avatarColor = avatarColor,
         contactId = contactId,
         reminderFrequencyDays = reminderFrequencyDays,
         preferredMethod = when (preferredMethod.lowercase()) {
@@ -38,6 +39,7 @@ fun ScheduledConnection.toEntity(): ScheduledConnectionEntity {
         contactPhoneNumber = contactPhoneNumber,
         contactEmail = contactEmail,
         contactPhotoUri = contactPhotoUri,
+        avatarColor = avatarColor,
         contactId = contactId,
         reminderFrequencyDays = reminderFrequencyDays,
         preferredMethod = when (preferredMethod) {

@@ -8,6 +8,7 @@ data class ScheduledConnection(
     val contactPhoneNumber: String? = null,
     val contactEmail: String? = null,
     val contactPhotoUri: String? = null, // URI to contact photo
+    val avatarColor: Int? = null, // Avatar background color (ARGB int)
     val contactId: String? = null,
     val reminderFrequencyDays: Int,
     val preferredMethod: ConnectionMethod,

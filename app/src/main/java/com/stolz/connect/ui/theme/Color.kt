@@ -15,6 +15,35 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+// Avatar background colors - aesthetic palette
+object AvatarColors {
+    val colors = listOf(
+        Color(0xFF6366F1), // Indigo
+        Color(0xFF8B5CF6), // Purple
+        Color(0xFFEC4899), // Pink
+        Color(0xFFEF4444), // Red
+        Color(0xFFF59E0B), // Amber
+        Color(0xFF10B981), // Emerald
+        Color(0xFF06B6D4), // Cyan
+        Color(0xFF3B82F6), // Blue
+        Color(0xFF6366F1), // Indigo (duplicate for more options)
+        Color(0xFF8B5CF6), // Purple (duplicate)
+        Color(0xFFEC4899), // Pink (duplicate)
+        Color(0xFF14B8A6), // Teal
+    )
+    
+    fun getColorForName(name: String): Color {
+        // Use name hash to consistently pick a color
+        val hash = name.hashCode()
+        val index = Math.abs(hash) % colors.size
+        return colors[index]
+    }
+    
+    fun getColorByIndex(index: Int): Color {
+        return colors[index % colors.size]
+    }
+}
+
 // Connection status colors
 object ConnectionColors {
     // Indicator colors (same for light and dark)

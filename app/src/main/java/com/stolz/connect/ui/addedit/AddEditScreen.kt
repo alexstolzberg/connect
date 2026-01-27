@@ -4,13 +4,21 @@ import android.Manifest
 import android.content.ContentUris
 import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.border
+import androidx.compose.foundation.background
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +37,22 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import com.stolz.connect.platform.PermissionHelper
+import coil.compose.AsyncImage
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Photo
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import android.net.Uri
+import android.os.Build
+import android.provider.MediaStore
+import androidx.core.content.FileProvider
+import java.io.File
+import com.stolz.connect.ui.theme.AvatarColors
+import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -194,6 +218,299 @@ fun AddEditScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Contact photo
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                var showPhotoOptions by remember { mutableStateOf(false) }
+                var photoUri by remember { mutableStateOf<Uri?>(null) }
+                var cameraPhotoUri by remember { mutableStateOf<Uri?>(null) }
+                
+                // Track if we've initialized the color to avoid regenerating on every recomposition
+                var colorInitialized by remember { mutableStateOf(false) }
+                
+                // Get avatar color - use stored color or pick a random one initially
+                val avatarColor = remember(uiState.avatarColor) {
+                    val storedColor = uiState.avatarColor
+                    if (storedColor != null) {
+                        androidx.compose.ui.graphics.Color(storedColor)
+                    } else {
+                        // Use a random color from the palette
+                        val randomIndex = (System.currentTimeMillis() % AvatarColors.colors.size).toInt()
+                        AvatarColors.colors[randomIndex]
+                    }
+                }
+                
+                // Set initial random color only once when screen loads and no color is set
+                LaunchedEffect(uiState.avatarColor) {
+                    if (!colorInitialized && uiState.avatarColor == null) {
+                        val randomIndex = (System.currentTimeMillis() % AvatarColors.colors.size).toInt()
+                        val selectedColor = AvatarColors.colors[randomIndex]
+                        val colorInt = android.graphics.Color.argb(
+                            (selectedColor.alpha * 255).toInt(),
+                            (selectedColor.red * 255).toInt(),
+                            (selectedColor.green * 255).toInt(),
+                            (selectedColor.blue * 255).toInt()
+                        )
+                        viewModel.updateAvatarColor(colorInt)
+                        colorInitialized = true
+                    } else if (uiState.avatarColor != null) {
+                        colorInitialized = true
+                    }
+                }
+                
+                // Get initials
+                val initials = remember(uiState.contactName) {
+                    getInitials(uiState.contactName)
+                }
+                
+                // Update photoUri when uiState changes
+                LaunchedEffect(uiState.contactPhotoUri) {
+                    if (uiState.contactPhotoUri != null) {
+                        photoUri = Uri.parse(uiState.contactPhotoUri)
+                    } else {
+                        photoUri = null
+                    }
+                }
+                
+                // Photo picker launcher (for gallery) - modern API
+                val photoPickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.PickVisualMedia()
+                ) { uri: Uri? ->
+                    uri?.let {
+                        // Get the file path or content URI
+                        val photoUriString = it.toString()
+                        viewModel.updateContactPhotoUri(photoUriString)
+                        photoUri = it
+                    }
+                }
+                
+                // Fallback photo picker for older Android versions
+                val legacyPhotoPickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.GetContent()
+                ) { uri: Uri? ->
+                    uri?.let {
+                        val photoUriString = it.toString()
+                        viewModel.updateContactPhotoUri(photoUriString)
+                        photoUri = it
+                    }
+                }
+                
+                // Create temporary file for camera photo
+                fun createImageFile(): File? {
+                    return try {
+                        val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+                        File.createTempFile(
+                            "JPEG_${System.currentTimeMillis()}_",
+                            ".jpg",
+                            storageDir
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                
+                // Camera launcher - must be defined before launchCamera() function
+                val cameraLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.TakePicture()
+                ) { success ->
+                    if (success && cameraPhotoUri != null) {
+                        val photoUriString = cameraPhotoUri.toString()
+                        viewModel.updateContactPhotoUri(photoUriString)
+                        photoUri = cameraPhotoUri
+                    }
+                }
+                
+                // Function to launch camera after permission is granted
+                fun launchCamera() {
+                    val imageFile = createImageFile()
+                    if (imageFile != null) {
+                        cameraPhotoUri = FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            imageFile
+                        )
+                        cameraLauncher.launch(cameraPhotoUri)
+                    } else {
+                        android.widget.Toast.makeText(context, "Could not create file for photo", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+                
+                // Camera permission launcher
+                val cameraPermissionLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    if (isGranted) {
+                        // Permission granted, launch camera
+                        launchCamera()
+                    } else {
+                        android.widget.Toast.makeText(context, "Camera permission is required to take photos", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                }
+                
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .clickable { showPhotoOptions = true },
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (photoUri != null) {
+                        AsyncImage(
+                            model = photoUri,
+                            contentDescription = "Contact Photo",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            shape = CircleShape,
+                            color = avatarColor
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = initials,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = androidx.compose.ui.graphics.Color.White
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                // Photo options dialog
+                if (showPhotoOptions) {
+                    AlertDialog(
+                        onDismissRequest = { showPhotoOptions = false },
+                        title = { Text("Select Photo") },
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        showPhotoOptions = false
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                            photoPickerLauncher.launch(
+                                                PickVisualMediaRequest.Builder()
+                                                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                                    .build()
+                                            )
+                                        } else {
+                                            legacyPhotoPickerLauncher.launch("image/*")
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(Icons.Default.Photo, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Choose from Gallery")
+                                }
+                                TextButton(
+                                    onClick = {
+                                        showPhotoOptions = false
+                                        // Check for camera permission first
+                                        if (PermissionHelper.hasCameraPermission(context)) {
+                                            launchCamera()
+                                        } else {
+                                            // Request camera permission
+                                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Icon(Icons.Default.CameraAlt, contentDescription = null)
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Take Photo")
+                                }
+                                if (photoUri != null) {
+                                    TextButton(
+                                        onClick = {
+                                            showPhotoOptions = false
+                                            viewModel.updateContactPhotoUri(null)
+                                            photoUri = null
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text("Remove Photo", color = MaterialTheme.colorScheme.error)
+                                    }
+                                }
+                                
+                                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                                
+                                Text(
+                                    text = "Choose Avatar Color",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    modifier = Modifier.padding(bottom = 4.dp)
+                                )
+                                
+                                // Color palette grid - wrapped to multiple rows
+                                LazyVerticalGrid(
+                                    columns = GridCells.Fixed(6),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(120.dp)
+                                ) {
+                                    items(AvatarColors.colors.size) { index ->
+                                        val color = AvatarColors.colors[index]
+                                        val colorInt = android.graphics.Color.argb(
+                                            (color.alpha * 255).toInt(),
+                                            (color.red * 255).toInt(),
+                                            (color.green * 255).toInt(),
+                                            (color.blue * 255).toInt()
+                                        )
+                                        val isSelected = uiState.avatarColor == colorInt
+                                        
+                                        Box(
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .clip(CircleShape)
+                                                .clickable {
+                                                    viewModel.updateAvatarColor(colorInt)
+                                                }
+                                                .then(
+                                                    if (isSelected) {
+                                                        Modifier
+                                                            .border(
+                                                                width = 3.dp,
+                                                                color = MaterialTheme.colorScheme.primary,
+                                                                shape = CircleShape
+                                                            )
+                                                    } else {
+                                                        Modifier
+                                                    }
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Surface(
+                                                modifier = Modifier.fillMaxSize(),
+                                                shape = CircleShape,
+                                                color = color
+                                            ) {}
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showPhotoOptions = false }) {
+                                Text("Done")
+                            }
+                        }
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
             // Contact selection
             OutlinedButton(
                 onClick = {
@@ -340,7 +657,7 @@ fun AddEditScreen(
                     FilterChip(
                         selected = uiState.preferredMethod == ConnectionMethod.BOTH,
                         onClick = { viewModel.updatePreferredMethod(ConnectionMethod.BOTH) },
-                        label = { Text("Any") }
+                        label = { Text("No Preference") }
                     )
                 }
             }
@@ -457,5 +774,14 @@ fun AddEditScreen(
                 )
             }
         }
+    }
+}
+
+private fun getInitials(name: String): String {
+    val parts = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
+    return when {
+        parts.isEmpty() -> "?"
+        parts.size == 1 -> parts[0].take(1).uppercase()
+        else -> "${parts[0].first()}${parts.last().first()}".uppercase()
     }
 }

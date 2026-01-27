@@ -127,19 +127,10 @@ fun InboxScreen(
                     }
                 }
             )
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
-                Icon(Icons.Default.Add, contentDescription = "Add Connection")
-            }
         }
     ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(
-                    bottom = paddingValues.calculateBottomPadding()
-                )
+            modifier = Modifier.fillMaxSize()
         ) {
             val hasConnections = uiState.inboxSections.any { it.connections.isNotEmpty() }
             
@@ -169,7 +160,7 @@ fun InboxScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
-                            top = paddingValues.calculateTopPadding(),
+                            top = paddingValues.calculateTopPadding() + Dimensions.medium,
                             start = Dimensions.medium,
                             end = Dimensions.medium,
                             bottom = Dimensions.medium
@@ -183,7 +174,7 @@ fun InboxScreen(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(
-                                        top = if (sectionIndex == 0) Dimensions.medium else Dimensions.large,
+                                        top = if (sectionIndex == 0) 0.dp else Dimensions.large,
                                         bottom = Dimensions.xsmall
                                     ),
                                     color = MaterialTheme.colorScheme.primary

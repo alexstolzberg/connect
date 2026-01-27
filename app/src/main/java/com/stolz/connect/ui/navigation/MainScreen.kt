@@ -2,6 +2,7 @@ package com.stolz.connect.ui.navigation
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
@@ -54,11 +55,24 @@ fun MainScreen(navController: NavHostController) {
                     }
                 )
             }
-        }
-    ) { paddingValues ->
+        },
+        floatingActionButton = {
+            // Show FAB only on Inbox and All screens
+            if (currentDestination?.route == Screen.Inbox.route || 
+                currentDestination?.route == Screen.All.route) {
+                FloatingActionButton(
+                    onClick = {
+                        navController.navigate(Screen.AddEdit.createRoute(null))
+                    }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Add Connection")
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.End
+    ) {
         NavGraph(
-            navController = navController,
-            modifier = Modifier.padding(paddingValues)
+            navController = navController
         )
     }
 }

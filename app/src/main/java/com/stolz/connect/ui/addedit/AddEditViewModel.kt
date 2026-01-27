@@ -30,6 +30,7 @@ class AddEditViewModel @Inject constructor(
             contactPhoneNumber = null,
             contactEmail = null,
             contactPhotoUri = null,
+            avatarColor = null,
             contactId = null,
             reminderFrequencyDays = 7,
             preferredMethod = ConnectionMethod.BOTH,
@@ -66,6 +67,7 @@ class AddEditViewModel @Inject constructor(
                     contactPhoneNumber = it.contactPhoneNumber,
                     contactEmail = it.contactEmail,
                     contactPhotoUri = it.contactPhotoUri,
+                    avatarColor = it.avatarColor,
                     contactId = it.contactId,
                     reminderFrequencyDays = it.reminderFrequencyDays,
                     preferredMethod = it.preferredMethod,
@@ -95,6 +97,10 @@ class AddEditViewModel @Inject constructor(
     
     fun updateContactPhotoUri(photoUri: String?) {
         _uiState.value = _uiState.value.copy(contactPhotoUri = photoUri)
+    }
+    
+    fun updateAvatarColor(color: Int?) {
+        _uiState.value = _uiState.value.copy(avatarColor = color)
     }
     
     fun updateContactId(contactId: String?) {
@@ -176,6 +182,7 @@ class AddEditViewModel @Inject constructor(
                     contactPhoneNumber = state.contactPhoneNumber,
                     contactEmail = state.contactEmail,
                     contactPhotoUri = state.contactPhotoUri,
+                    avatarColor = state.avatarColor,
                     contactId = state.contactId,
                     reminderFrequencyDays = state.reminderFrequencyDays,
                     preferredMethod = state.preferredMethod,
@@ -225,6 +232,7 @@ data class AddEditUiState(
     val contactPhoneNumber: String? = null,
     val contactEmail: String? = null,
     val contactPhotoUri: String? = null,
+    val avatarColor: Int? = null,
     val contactId: String? = null,
     val reminderFrequencyDays: Int,
     val preferredMethod: ConnectionMethod,
