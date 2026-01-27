@@ -10,9 +10,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.Image
 import kotlinx.coroutines.delay
 
 @Composable
@@ -40,7 +44,16 @@ fun SplashScreen(
 fun Splash(alpha: Float) {
     Box(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.primary)
+            .background(
+                Brush.linearGradient(
+                    colors = listOf(
+                        Color(0xFFB8C5E8), // Light blue-purple
+                        Color(0xFF9B7DD9), // Purple
+                        Color(0xFFD9779F), // Pink
+                        Color(0xFFFF6B4A)  // Orange-red
+                    )
+                )
+            )
             .fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
@@ -48,18 +61,27 @@ fun Splash(alpha: Float) {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
+            // App icon
+            Image(
+                painter = painterResource(id = com.stolz.connect.R.drawable.ic_launcher_foreground),
+                contentDescription = "Connect App Icon",
+                modifier = Modifier
+                    .size(120.dp)
+                    .alpha(alpha = alpha)
+            )
+            Spacer(modifier = Modifier.height(24.dp))
             Text(
                 text = "Connect",
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onPrimary,
+                color = Color.White,
                 modifier = Modifier.alpha(alpha = alpha)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Stay connected with the people who matter",
                 fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f),
+                color = Color.White.copy(alpha = 0.9f),
                 modifier = Modifier.alpha(alpha = alpha)
             )
         }

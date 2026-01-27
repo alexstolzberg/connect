@@ -1,6 +1,5 @@
 package com.stolz.connect.ui.home
 
-import android.provider.CalendarContract
 import androidx.compose.animation.*
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
@@ -129,7 +128,8 @@ fun ConnectionItem(
     onCallClick: () -> Unit,
     onMessageClick: () -> Unit,
     onEmailClick: (() -> Unit)? = null,
-    onMarkComplete: () -> Unit
+    onMarkComplete: () -> Unit,
+    onSnoozeClick: (() -> Unit)? = null
 ) {
     val dateFormat = remember { SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()) }
     val animationState = rememberConnectionItemAnimationState(onMarkComplete)
@@ -223,24 +223,44 @@ fun ConnectionItem(
                 )
             }
             
-            if (connection.isDueToday) {
-                IconButton(
-                    onClick = animationState.handleMarkComplete,
+            // Show action buttons for past due or today items
+            if (connection.isPastDue || connection.isDueToday) {
+                Row(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .size(48.dp)
-                        .scale(animationState.checkmarkScaleAnim)
-                        .padding(Dimensions.small)
+                        .padding(Dimensions.xsmall)
                 ) {
-                    Icon(
-                        imageVector = if (animationState.checkmarkState == 2) {
-                            Icons.Default.CheckCircle
-                        } else {
-                            Icons.Outlined.CheckCircle
-                        },
-                        contentDescription = "Mark as Contacted",
-                        tint = animationState.checkmarkColor
-                    )
+                    // Snooze button
+                    if (onSnoozeClick != null) {
+                        IconButton(
+                            onClick = onSnoozeClick,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Snooze",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        }
+                    }
+                    
+                    // Checkmark button
+                    IconButton(
+                        onClick = animationState.handleMarkComplete,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .scale(animationState.checkmarkScaleAnim)
+                    ) {
+                        Icon(
+                            imageVector = if (animationState.checkmarkState == 2) {
+                                Icons.Default.CheckCircle
+                            } else {
+                                Icons.Outlined.CheckCircle
+                            },
+                            contentDescription = "Mark as Contacted",
+                            tint = animationState.checkmarkColor
+                        )
+                    }
                 }
             }
         }
@@ -411,6 +431,11 @@ private fun ConnectionItemMetadata(
         MaterialTheme.colorScheme.onSurface
     }
     
+    // Check if item is snoozed (in upcoming section but was originally past due/today)
+    // For now, we'll show snooze indicator if nextReminderDate is in future and item is not past due or today
+    val isSnoozed = !connection.isPastDue && !connection.isDueToday && 
+                    connection.nextReminderDate.after(Date())
+    
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -426,6 +451,15 @@ private fun ConnectionItemMetadata(
             fontWeight = FontWeight.Medium,
             color = valueColor
         )
+        // Show snooze indicator if item was snoozed
+        if (isSnoozed) {
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = "Snoozed",
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(16.dp)
+            )
+        }
     }
     
     if (connection.lastContactedDate != null) {
@@ -513,7 +547,8 @@ fun ConnectionItemPreview() {
         onCallClick = {},
         onMessageClick = {},
         onEmailClick = {},
-        onMarkComplete = {}
+        onMarkComplete = {},
+        onSnoozeClick = null
     )
 }
 
@@ -551,6 +586,7 @@ fun ConnectionItemOverduePreview() {
         onCallClick = {},
         onMessageClick = {},
         onEmailClick = null,
-        onMarkComplete = {}
+        onMarkComplete = {},
+        onSnoozeClick = null
     )
 }

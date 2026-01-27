@@ -13,10 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -189,7 +186,8 @@ fun AllScreen(
                                 onEmailClick = {
                                     connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
                                 },
-                                onMarkComplete = { viewModel.markAsContacted(connection) }
+                                onMarkComplete = { viewModel.markAsContacted(connection) },
+                                onSnoozeClick = null // Snooze only available in Inbox view
                             )
                         }
                     }

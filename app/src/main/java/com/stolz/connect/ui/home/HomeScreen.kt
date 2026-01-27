@@ -9,12 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -27,29 +21,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
-import coil.compose.AsyncImage
-import com.stolz.connect.domain.model.ConnectionMethod
-import com.stolz.connect.domain.model.ScheduledConnection
 import com.stolz.connect.platform.ContactHelper
-import com.stolz.connect.util.ContactColorCategory
-import com.stolz.connect.util.TimeFormatter
-import com.stolz.connect.util.PhoneNumberFormatter
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -196,7 +169,8 @@ fun TodayTab(
                         onMessageClick = { 
                             connection.contactPhoneNumber?.let { onMessageClick(it) }
                         },
-                        onMarkComplete = { onMarkComplete(connection) }
+                        onMarkComplete = { onMarkComplete(connection) },
+                        onSnoozeClick = null
                     )
                 }
         }
@@ -244,7 +218,8 @@ fun AllTab(
                         onMessageClick = { 
                             connection.contactPhoneNumber?.let { onMessageClick(it) }
                         },
-                        onMarkComplete = { onMarkComplete(connection) }
+                        onMarkComplete = { onMarkComplete(connection) },
+                        onSnoozeClick = null
                     )
                 }
         }

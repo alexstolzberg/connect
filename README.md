@@ -66,7 +66,13 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.5 (Latest)
+### Version 1.3.6 (Latest)
+- 🎨 New app icon: Broken cable design with gradient background and spark effect
+- 🎨 Updated splash screen to display app icon with matching gradient background
+- 🧹 Code cleanup: Removed unused imports, debug code, and unnecessary files
+- 🐛 Fixed vector drawable compilation errors
+
+### Version 1.3.5
 - 📬 Renamed "Today" tab to "Inbox" for better clarity
 - 📝 Added notes display on connection cards using DataRow format
 - 🎨 Improved section spacing in Inbox view for better visual organization

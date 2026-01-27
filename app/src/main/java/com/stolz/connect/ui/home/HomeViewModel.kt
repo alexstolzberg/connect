@@ -27,25 +27,11 @@ class HomeViewModel @Inject constructor(
     
     init {
         viewModelScope.launch {
-            // Collect from both Flows - Room Flows automatically emit when data changes
-            // Also collect debug flow to see all connections
             combine(
                 connectionRepository.getAllActiveConnections(),
                 connectionRepository.getTodayConnections(),
-                connectionRepository.getAllConnections(), // Debug
                 _searchQuery
-            ) { allConnections, todayConnections, allDebug, query ->
-                android.util.Log.d("HomeViewModel", "Flow emitted - All: ${allConnections.size}, Today: ${todayConnections.size}, Debug (all): ${allDebug.size}")
-                if (allDebug.isNotEmpty() && allConnections.isEmpty()) {
-                    android.util.Log.w("HomeViewModel", "WARNING: Found ${allDebug.size} connections in DB but 0 active ones!")
-                    allDebug.forEach { conn ->
-                        android.util.Log.w("HomeViewModel", "  - ${conn.contactName}, ID: ${conn.id}, Active: ${conn.isActive}")
-                    }
-                }
-                allConnections.forEach { conn ->
-                    android.util.Log.d("HomeViewModel", "Connection: ${conn.contactName}, ID: ${conn.id}, Active: ${conn.isActive}, NextDate: ${conn.nextReminderDate}")
-                }
-                
+            ) { allConnections, todayConnections, query ->
                 // Filter by search query if present
                 val filteredAll = if (query.isBlank()) {
                     allConnections
@@ -76,7 +62,6 @@ class HomeViewModel @Inject constructor(
                     inboxSections = inboxSections
                 )
             }.collect { state ->
-                android.util.Log.d("HomeViewModel", "Updating UI state with ${state.allConnections.size} connections")
                 _uiState.value = state
             }
         }
@@ -105,6 +90,12 @@ class HomeViewModel @Inject constructor(
     fun markAsContacted(connection: ScheduledConnection) {
         viewModelScope.launch {
             connectionRepository.markAsContacted(connection)
+        }
+    }
+    
+    fun snoozeReminder(connection: ScheduledConnection, snoozeDate: Date) {
+        viewModelScope.launch {
+            connectionRepository.snoozeReminder(connection, snoozeDate)
         }
     }
     

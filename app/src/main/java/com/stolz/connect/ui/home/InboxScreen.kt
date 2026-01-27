@@ -13,10 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
+import com.stolz.connect.ui.home.SnoozeBottomSheet
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -31,6 +29,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.material.ExperimentalMaterialApi
+import com.stolz.connect.domain.model.ScheduledConnection
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import com.stolz.connect.platform.ContactHelper
@@ -46,6 +45,7 @@ fun InboxScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val context = LocalContext.current
     var searchActive by remember { mutableStateOf(false) }
+    var showSnoozeSheet by remember { mutableStateOf<ScheduledConnection?>(null) }
     val lifecycleOwner = LocalLifecycleOwner.current
     
     // Refresh when screen resumes
@@ -206,7 +206,10 @@ fun InboxScreen(
                                     onEmailClick = {
                                         connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
                                     },
-                                    onMarkComplete = { viewModel.markAsContacted(connection) }
+                                    onMarkComplete = { viewModel.markAsContacted(connection) },
+                                    onSnoozeClick = if (connection.isPastDue || connection.isDueToday) {
+                                        { showSnoozeSheet = connection }
+                                    } else null
                                 )
                             }
                         }
@@ -218,6 +221,17 @@ fun InboxScreen(
                     )
                 }
             }
+        }
+        
+        // Snooze bottom sheet
+        showSnoozeSheet?.let { connection ->
+            SnoozeBottomSheet(
+                onDismiss = { showSnoozeSheet = null },
+                onSnoozeSelected = { snoozeDate ->
+                    viewModel.snoozeReminder(connection, snoozeDate)
+                    showSnoozeSheet = null
+                }
+            )
         }
     }
 }

@@ -43,6 +43,30 @@ data class ScheduledConnection(
             
             return reminderStart == todayStart || reminderStart.before(todayStart)
         }
+    
+    val isPastDue: Boolean
+        get() {
+            val today = Date()
+            val calendar = java.util.Calendar.getInstance().apply {
+                time = today
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            val todayStart = calendar.time
+            
+            val reminderCalendar = java.util.Calendar.getInstance().apply {
+                time = nextReminderDate
+                set(java.util.Calendar.HOUR_OF_DAY, 0)
+                set(java.util.Calendar.MINUTE, 0)
+                set(java.util.Calendar.SECOND, 0)
+                set(java.util.Calendar.MILLISECOND, 0)
+            }
+            val reminderStart = reminderCalendar.time
+            
+            return reminderStart.before(todayStart)
+        }
 }
 
 enum class ConnectionMethod {

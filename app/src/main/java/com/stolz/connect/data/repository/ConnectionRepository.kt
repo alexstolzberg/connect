@@ -22,18 +22,6 @@ class ConnectionRepository @Inject constructor(
     
     fun getAllActiveConnections(): Flow<List<ScheduledConnection>> {
         return connectionDao.getAllActiveConnections().map { entities ->
-            android.util.Log.d("ConnectionRepository", "getAllActiveConnections returned ${entities.size} entities")
-            entities.map { it.toDomain() }
-        }
-    }
-    
-    // Debug function
-    fun getAllConnections(): Flow<List<ScheduledConnection>> {
-        return connectionDao.getAllConnections().map { entities ->
-            android.util.Log.d("ConnectionRepository", "getAllConnections (debug) returned ${entities.size} entities")
-            entities.forEach { 
-                android.util.Log.d("ConnectionRepository", "  - ${it.contactName}, ID: ${it.id}, Active: ${it.isActive}")
-            }
             entities.map { it.toDomain() }
         }
     }
@@ -50,20 +38,11 @@ class ConnectionRepository @Inject constructor(
     
     suspend fun insertConnection(connection: ScheduledConnection): Long {
         val entity = connection.toEntity()
-        android.util.Log.d("ConnectionRepository", "Inserting connection: ${entity.contactName}, ID: ${entity.id}, Active: ${entity.isActive}, NextDate: ${entity.nextReminderDate}")
         val insertedId = connectionDao.insertConnection(entity)
-        android.util.Log.d("ConnectionRepository", "Inserted with ID: $insertedId")
         
         // Schedule notification for the connection
         val connectionWithId = connection.copy(id = insertedId)
         NotificationManager.scheduleNotification(context, connectionWithId)
-        
-        // Debug: Check all connections after insert
-        val allDebug = connectionDao.getAllConnectionsDebug()
-        android.util.Log.d("ConnectionRepository", "Total connections in DB: ${allDebug.size}")
-        allDebug.forEach { 
-            android.util.Log.d("ConnectionRepository", "  - ${it.contactName}, ID: ${it.id}, Active: ${it.isActive}")
-        }
         
         return insertedId
     }
@@ -94,6 +73,16 @@ class ConnectionRepository @Inject constructor(
         val updatedConnection = connection.copy(
             lastContactedDate = now,
             nextReminderDate = nextReminderDate
+        )
+        NotificationManager.scheduleNotification(context, updatedConnection)
+    }
+    
+    suspend fun snoozeReminder(connection: ScheduledConnection, snoozeDate: Date) {
+        connectionDao.snoozeReminder(connection.id, snoozeDate)
+        
+        // Reschedule notification for the snooze date
+        val updatedConnection = connection.copy(
+            nextReminderDate = snoozeDate
         )
         NotificationManager.scheduleNotification(context, updatedConnection)
     }
