@@ -65,7 +65,15 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.3 (Latest)
+### Version 1.3.4 (Latest)
+- 🎨 Major dark theme color improvements for better contrast and readability
+- 🌑 Updated dark mode backgrounds: very dark green (0x0C3301), light yellow (d4d272), light red (d18a82)
+- ✨ Conditional text colors in dark mode: white text on dark backgrounds, dark text on light backgrounds
+- 🎯 Improved checkmark button: icon-only with increased padding for better touch target
+- 🎨 Enhanced outline colors for dark mode cards with lighter, more visible borders
+- ♿ Better accessibility with improved text contrast ratios
+
+### Version 1.3.3
 - 🎯 Reorganized "Today" view into an inbox-style layout with sections (Past Due, Today, Upcoming)
 - ✨ "Today" view now includes overdue items (not just items due today)
 - 📋 Added section headers to organize connections by urgency

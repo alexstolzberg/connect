@@ -14,12 +14,18 @@ import androidx.compose.ui.platform.LocalContext
 import com.stolz.connect.data.preferences.ThemeMode
 
 private val DarkColorScheme = darkColorScheme(
-    primary = ConnectPrimary,
-    secondary = ConnectSecondary,
-    tertiary = ConnectTertiary,
+    primary = Color(0xFF5B5FCF), // Muted darker indigo for dark theme
+    secondary = Color(0xFF6D4DD9), // Muted darker purple for dark theme
+    tertiary = Color(0xFFC2185B), // Muted darker pink for dark theme
     background = Color(0xFF121212),
     surface = Color(0xFF1E1E1E),
-    surfaceVariant = Color(0xFF2C2C2C)
+    surfaceVariant = Color(0xFF2C2C2C),
+    onPrimary = Color.White,
+    onSecondary = Color.White,
+    onTertiary = Color.White,
+    primaryContainer = Color(0xFF2E2D5C), // Dark muted container for dark theme
+    secondaryContainer = Color(0xFF3D2A5C), // Dark muted container for dark theme
+    tertiaryContainer = Color(0xFF4A1A2E) // Dark muted container for dark theme
 )
 
 private val LightColorScheme = lightColorScheme(

@@ -17,13 +17,23 @@ val Pink40 = Color(0xFF7D5260)
 
 // Connection status colors
 object ConnectionColors {
-    // Indicator colors
+    // Indicator colors (same for light and dark)
     val GreenIndicator = Color(0xFF4CAF50)
     val YellowIndicator = Color(0xFFFFC107)
     val RedIndicator = Color(0xFFF44336)
     
-    // Background colors
-    val GreenBackground = Color(0xFFE8F5E9) // Light green
-    val YellowBackground = Color(0xFFFFF9C4) // Light yellow
-    val RedBackground = Color(0xFFFFEBEE) // Light red
+    // Background colors - Light theme
+    val GreenBackgroundLight = Color(0xFFE8F5E9) // Light green
+    val YellowBackgroundLight = Color(0xFFFFF8E1) // Muted pastel yellow
+    val RedBackgroundLight = Color(0xFFFFEBEE) // Light red
+    
+    // Background colors - Dark theme
+    val GreenBackgroundDark = Color(0xFF0C3301) // Very dark green
+    val YellowBackgroundDark = Color(0xFFD4D272) // Light yellow background
+    val RedBackgroundDark = Color(0xFFD18A82) // Light red background
+    
+    // Outline colors for dark theme (lighter than background)
+    val GreenOutlineDark = Color(0xFF4CAF50) // Lighter green outline
+    val YellowOutlineDark = Color(0xFFD4D272) // Light yellow outline
+    val RedOutlineDark = Color(0xFFD18A82) // Light red outline
 }

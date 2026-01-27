@@ -6,6 +6,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -147,18 +148,28 @@ fun ConnectionItem(
         connection.reminderFrequencyDays
     )
     
-    val colors = remember(colorCategory) {
+    val isDarkTheme = isSystemInDarkTheme()
+    val colors = remember(colorCategory, isDarkTheme) {
         val indicatorColor = when (colorCategory) {
             ContactColorCategory.GREEN -> ConnectionColors.GreenIndicator
             ContactColorCategory.YELLOW -> ConnectionColors.YellowIndicator
             ContactColorCategory.RED -> ConnectionColors.RedIndicator
         }
         val backgroundColor = when (colorCategory) {
-            ContactColorCategory.GREEN -> ConnectionColors.GreenBackground
-            ContactColorCategory.YELLOW -> ConnectionColors.YellowBackground
-            ContactColorCategory.RED -> ConnectionColors.RedBackground
+            ContactColorCategory.GREEN -> if (isDarkTheme) ConnectionColors.GreenBackgroundDark else ConnectionColors.GreenBackgroundLight
+            ContactColorCategory.YELLOW -> if (isDarkTheme) ConnectionColors.YellowBackgroundDark else ConnectionColors.YellowBackgroundLight
+            ContactColorCategory.RED -> if (isDarkTheme) ConnectionColors.RedBackgroundDark else ConnectionColors.RedBackgroundLight
         }
-        Colors(indicatorColor, backgroundColor)
+        val outlineColor = if (isDarkTheme) {
+            when (colorCategory) {
+                ContactColorCategory.GREEN -> ConnectionColors.GreenOutlineDark
+                ContactColorCategory.YELLOW -> ConnectionColors.YellowOutlineDark
+                ContactColorCategory.RED -> ConnectionColors.RedOutlineDark
+            }
+        } else {
+            indicatorColor.copy(alpha = 0.6f)
+        }
+        Colors(indicatorColor, backgroundColor, outlineColor)
     }
     
     val relativeTimeText = remember(refreshTrigger, connection.lastContactedDate) {
@@ -176,7 +187,7 @@ fun ConnectionItem(
         ),
         border = BorderStroke(
             width = 2.dp,
-            color = colors.indicatorColor.copy(alpha = 0.6f)
+            color = colors.outlineColor
         )
     ) {
         Box(modifier = Modifier.fillMaxWidth()) {
@@ -196,6 +207,7 @@ fun ConnectionItem(
                         onCallClick = onCallClick,
                         onMessageClick = onMessageClick,
                         onEmailClick = onEmailClick,
+                        colorCategory = colorCategory,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -206,7 +218,8 @@ fun ConnectionItem(
                     connection = connection,
                     dateFormat = dateFormat,
                     relativeTimeText = relativeTimeText,
-                    indicatorColor = colors.indicatorColor
+                    indicatorColor = colors.indicatorColor,
+                    colorCategory = colorCategory
                 )
             }
             
@@ -215,8 +228,9 @@ fun ConnectionItem(
                     onClick = animationState.handleMarkComplete,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .size(40.dp)
+                        .size(48.dp)
                         .scale(animationState.checkmarkScaleAnim)
+                        .padding(Dimensions.small)
                 ) {
                     Icon(
                         imageVector = if (animationState.checkmarkState == 2) {
@@ -271,13 +285,26 @@ private fun ConnectionItemContent(
     onCallClick: () -> Unit,
     onMessageClick: () -> Unit,
     onEmailClick: (() -> Unit)?,
+    colorCategory: ContactColorCategory,
     modifier: Modifier = Modifier
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+    // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
+    val textColor = if (isDarkTheme) {
+        when (colorCategory) {
+            ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A) // Light backgrounds need dark text
+        }
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    
     Column(modifier = modifier.padding(start = Dimensions.small)) {
         Text(
             text = connection.contactName,
             style = MaterialTheme.typography.titleLarge,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = textColor
         )
         Spacer(modifier = Modifier.height(4.dp))
         
@@ -309,7 +336,8 @@ private fun ConnectionItemContent(
             DataRow(
                 label = "Phone",
                 value = PhoneNumberFormatter.format(connection.contactPhoneNumber),
-                actions = phoneActions
+                actions = phoneActions,
+                colorCategory = colorCategory
             )
         }
         
@@ -326,7 +354,8 @@ private fun ConnectionItemContent(
                         contentDescription = "Email",
                         onClick = onEmailClick ?: {}
                     )
-                )
+                ),
+                colorCategory = colorCategory
             )
         }
         
@@ -336,7 +365,8 @@ private fun ConnectionItemContent(
             }
             DataRow(
                 label = "Birthday",
-                value = dateFormat.format(connection.birthday)
+                value = dateFormat.format(connection.birthday),
+                colorCategory = colorCategory
             )
         }
     }
@@ -347,8 +377,29 @@ private fun ConnectionItemMetadata(
     connection: ScheduledConnection,
     dateFormat: SimpleDateFormat,
     relativeTimeText: String?,
-    indicatorColor: Color
+    indicatorColor: Color,
+    colorCategory: ContactColorCategory
 ) {
+    val isDarkTheme = isSystemInDarkTheme()
+    // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
+    val textColor = if (isDarkTheme) {
+        when (colorCategory) {
+            ContactColorCategory.GREEN -> Color.White.copy(alpha = 0.9f) // Dark green background needs white text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A).copy(alpha = 0.8f) // Light backgrounds need dark text
+        }
+    } else {
+        MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    
+    val valueColor = if (isDarkTheme) {
+        when (colorCategory) {
+            ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A) // Light backgrounds need dark text
+        }
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+    
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -356,12 +407,13 @@ private fun ConnectionItemMetadata(
         Text(
             text = "Next:",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = textColor
         )
         Text(
             text = dateFormat.format(connection.nextReminderDate),
             style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = valueColor
         )
     }
     
@@ -374,7 +426,7 @@ private fun ConnectionItemMetadata(
             Text(
                 text = "Last:",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = textColor
             )
             Text(
                 text = relativeTimeText ?: "",
@@ -396,7 +448,8 @@ private fun ConnectionItemMetadata(
 
 private data class Colors(
     val indicatorColor: Color,
-    val backgroundColor: Color
+    val backgroundColor: Color,
+    val outlineColor: Color
 )
 
 @Preview(showBackground = true, name = "Connection Item - Due Today")
