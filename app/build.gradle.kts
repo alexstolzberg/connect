@@ -83,10 +83,18 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     
     testImplementation(libs.junit)
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("app.cash.turbine:turbine:1.0.0")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.robolectric:robolectric:4.12")
+    testImplementation("androidx.room:room-testing:2.6.1")
+    
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation("io.mockk:mockk-android:1.13.10")
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 }

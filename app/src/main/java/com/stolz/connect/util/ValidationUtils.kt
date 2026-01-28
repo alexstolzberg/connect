@@ -1,20 +1,22 @@
 package com.stolz.connect.util
 
 object ValidationUtils {
-    private val EMAIL_PATTERN = android.util.Patterns.EMAIL_ADDRESS
-    private val PHONE_PATTERN = Regex("""^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$""")
+    // Simple, platform-independent email regex suitable for JVM tests and Android
+    // Covers typical emails like local@domain.tld, with +, _, . and - in local part.
+    private val EMAIL_REGEX =
+        Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
     
     fun isValidEmail(email: String?): Boolean {
         if (email.isNullOrBlank()) return true // Optional field
-        return EMAIL_PATTERN.matcher(email).matches()
+        return EMAIL_REGEX.matches(email)
     }
     
     fun isValidPhone(phone: String?): Boolean {
         if (phone.isNullOrBlank()) return true // Optional field
-        // Remove common formatting characters for validation
-        val cleaned = phone.replace(Regex("[^+\\d]"), "")
-        // Check if it has at least 7 digits (minimum for a valid phone number)
-        return cleaned.length >= 7 && cleaned.length <= 15
+        // Remove all non-digit characters (including +) for length validation
+        val digitsOnly = phone.replace(Regex("[^\\d]"), "")
+        // Check if it has at least 7 digits (minimum for a valid phone number) and max 15 digits
+        return digitsOnly.length >= 7 && digitsOnly.length <= 15
     }
     
     fun getEmailError(email: String?): String? {
