@@ -23,6 +23,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
 import com.stolz.connect.platform.ContactHelper
+import com.stolz.connect.ui.theme.Dimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,7 +141,7 @@ fun TodayTab(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(Dimensions.xlarge),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -152,8 +153,8 @@ fun TodayTab(
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            contentPadding = PaddingValues(Dimensions.medium),
+            verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
         ) {
             items(
                 items = connections,
@@ -189,7 +190,7 @@ fun AllTab(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(32.dp),
+                .padding(Dimensions.xlarge),
             contentAlignment = Alignment.Center
         ) {
             Text(
@@ -201,8 +202,8 @@ fun AllTab(
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            contentPadding = PaddingValues(horizontal = Dimensions.medium, vertical = Dimensions.xsmall),
+            verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
         ) {
             items(
                 items = connections,

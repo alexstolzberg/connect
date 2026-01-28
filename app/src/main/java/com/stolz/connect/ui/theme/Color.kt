@@ -15,21 +15,29 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
-// Avatar background colors - aesthetic palette
+// Avatar background colors - unique pastel palette
 object AvatarColors {
     val colors = listOf(
-        Color(0xFF6366F1), // Indigo
-        Color(0xFF8B5CF6), // Purple
-        Color(0xFFEC4899), // Pink
-        Color(0xFFEF4444), // Red
-        Color(0xFFF59E0B), // Amber
-        Color(0xFF10B981), // Emerald
-        Color(0xFF06B6D4), // Cyan
-        Color(0xFF3B82F6), // Blue
-        Color(0xFF6366F1), // Indigo (duplicate for more options)
-        Color(0xFF8B5CF6), // Purple (duplicate)
-        Color(0xFFEC4899), // Pink (duplicate)
-        Color(0xFF14B8A6), // Teal
+        Color(0xFF9B87F5), // Vibrant Lavender
+        Color(0xFFFF6B9D), // Bright Pink
+        Color(0xFFFFA07A), // Light Salmon
+        Color(0xFFFFB6C1), // Light Pink
+        Color(0xFFFFD700), // Gold
+        Color(0xFF90EE90), // Light Green
+        Color(0xFF87CEEB), // Sky Blue
+        Color(0xFFDDA0DD), // Plum
+        Color(0xFFFF6347), // Tomato
+        Color(0xFF40E0D0), // Turquoise
+        Color(0xFFFFA500), // Orange
+        Color(0xFF98D8C8), // Mint
+        Color(0xFFFF69B4), // Hot Pink
+        Color(0xFF9370DB), // Medium Purple
+        Color(0xFF20B2AA), // Light Sea Green
+        Color(0xFFFF8C00), // Dark Orange
+        Color(0xFFBA55D3), // Medium Orchid
+        Color(0xFF00CED1), // Dark Turquoise
+        Color(0xFFFF1493), // Deep Pink
+        Color(0xFF7B68EE), // Medium Slate Blue
     )
     
     fun getColorForName(name: String): Color {

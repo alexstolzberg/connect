@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stolz.connect.ui.theme.Dimensions
@@ -141,15 +142,34 @@ fun InboxScreen(
                         .padding(Dimensions.xlarge),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = if (searchQuery.isNotBlank()) {
-                            "No connections found matching \"$searchQuery\"."
-                        } else {
-                            "No connections due in the next week.\nTap the + button to add one."
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.medium)
+                    ) {
+                        Text(
+                            text = if (searchQuery.isNotBlank()) {
+                                "No connections found matching \"$searchQuery\"."
+                            } else {
+                                "No connections due in the next week."
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                        if (searchQuery.isBlank()) {
+                            Button(
+                                onClick = onAddClick
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
+                                Text("Add Connection")
+                            }
+                        }
+                    }
                 }
             } else {
                 Box(
@@ -199,9 +219,7 @@ fun InboxScreen(
                                         connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
                                     },
                                     onMarkComplete = { viewModel.markAsContacted(connection) },
-                                    onSnoozeClick = if (connection.isPastDue || connection.isDueToday) {
-                                        { showSnoozeSheet = connection }
-                                    } else null
+                                    onSnoozeClick = { showSnoozeSheet = connection }
                                 )
                             }
                         }

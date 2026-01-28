@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.util.ContactColorCategory
 
 data class DataRowAction(
@@ -32,23 +33,26 @@ fun DataRow(
 ) {
     val isDarkTheme = isSystemInDarkTheme()
     // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
+    // In light mode: all backgrounds are light (use dark text)
     val labelColor = if (isDarkTheme && colorCategory != null) {
         when (colorCategory) {
-            ContactColorCategory.GREEN -> Color.White.copy(alpha = 0.7f) // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A).copy(alpha = 0.7f) // Light backgrounds need dark text
+            ContactColorCategory.GREEN -> Color.White.copy(alpha = 0.9f) // Dark green background needs white text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000).copy(alpha = 0.9f) // Pure black on light backgrounds for maximum contrast
         }
     } else if (isDarkTheme) {
-        Color(0xFF1A1A1A).copy(alpha = 0.7f) // Default dark text for dark mode
+        // Default: assume dark background in dark mode
+        Color.White.copy(alpha = 0.9f)
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
     val valueColor = if (isDarkTheme && colorCategory != null) {
         when (colorCategory) {
             ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A) // Light backgrounds need dark text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
         }
     } else if (isDarkTheme) {
-        Color(0xFF1A1A1A) // Default dark text for dark mode
+        // Default: assume dark background in dark mode
+        Color.White
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
     }
@@ -74,12 +78,12 @@ fun DataRow(
             )
             if (actions.isNotEmpty()) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
                 ) {
                     actions.forEach { action ->
                         IconButton(
                             onClick = action.onClick,
-                            modifier = Modifier.size(32.dp)
+                            modifier = Modifier.size(Dimensions.xlarge)
                         ) {
                             Icon(
                                 imageVector = action.icon,

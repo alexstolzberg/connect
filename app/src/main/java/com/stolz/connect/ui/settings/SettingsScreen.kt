@@ -17,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.data.preferences.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,18 +41,18 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Theme Section
-            SettingsSection(title = "Appearance") {
-                ThemeSettingItem(
-                    title = "Theme",
-                    currentMode = themeMode,
-                    onModeSelected = { mode ->
-                        viewModel.setThemeMode(mode)
-                    }
-                )
-            }
-            
-            Divider()
+            // Theme Section - Temporarily hidden
+            // SettingsSection(title = "Appearance") {
+            //     ThemeSettingItem(
+            //         title = "Theme",
+            //         currentMode = themeMode,
+            //         onModeSelected = { mode ->
+            //             viewModel.setThemeMode(mode)
+            //         }
+            //     )
+            // }
+            // 
+            // Divider()
             
             // About Section
             SettingsSection(title = "About") {
@@ -77,8 +78,8 @@ fun SettingsSection(
             text = title,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(
-                horizontal = 16.dp,
-                vertical = 12.dp
+                horizontal = Dimensions.medium,
+                vertical = Dimensions.small
             ),
             color = MaterialTheme.colorScheme.primary
         )
@@ -204,7 +205,7 @@ fun ThemeOption(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 12.dp, horizontal = 16.dp),
+            .padding(vertical = Dimensions.small, horizontal = Dimensions.medium),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

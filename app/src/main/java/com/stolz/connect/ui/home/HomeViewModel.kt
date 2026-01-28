@@ -198,6 +198,8 @@ class HomeViewModel @Inject constructor(
     fun snoozeReminder(connection: ScheduledConnection, snoozeDate: Date) {
         viewModelScope.launch {
             connectionRepository.snoozeReminder(connection, snoozeDate)
+            // Trigger refresh to reorder items in the list
+            refreshConnections()
         }
     }
     

@@ -19,7 +19,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.stolz.connect.ui.theme.Dimensions
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -131,18 +133,37 @@ fun AllScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(32.dp),
+                        .padding(Dimensions.xlarge),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = if (searchQuery.isNotBlank()) {
-                            "No connections found matching \"$searchQuery\"."
-                        } else {
-                            "No connections yet.\nTap the + button to add one."
-                        },
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.medium)
+                    ) {
+                        Text(
+                            text = if (searchQuery.isNotBlank()) {
+                                "No connections found matching \"$searchQuery\"."
+                            } else {
+                                "No connections yet."
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center
+                        )
+                        if (searchQuery.isBlank()) {
+                            Button(
+                                onClick = onAddClick
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
+                                Text("Add Connection")
+                            }
+                        }
+                    }
                 }
             } else {
                 Box(
@@ -153,12 +174,12 @@ fun AllScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
-                            top = paddingValues.calculateTopPadding() + 16.dp,
-                            start = 16.dp,
-                            end = 16.dp,
-                            bottom = paddingValues.calculateBottomPadding() + 16.dp + 80.dp // Extra space for FAB
+                            top = paddingValues.calculateTopPadding() + Dimensions.medium,
+                            start = Dimensions.medium,
+                            end = Dimensions.medium,
+                            bottom = paddingValues.calculateBottomPadding() + Dimensions.medium + 80.dp // Extra space for FAB
                         ),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                     ) {
                         items(
                             items = uiState.allConnections,

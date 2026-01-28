@@ -67,7 +67,12 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.7 (Latest)
+### Version 1.3.8 (Latest)
+- 🎨 Color standardization: Unified all accent colors (FAB, bottom nav, buttons, pills) to use the same blue color from frequency pills
+- 🎨 Updated dark theme primary color to match light theme for consistent blue across all themes
+- 🎨 Improved visual consistency throughout the app
+
+### Version 1.3.7
 - 📸 Added camera permission handling for taking contact photos
 - 🎨 Improved avatar initials: Shows one letter for single names, two letters (first + last) when both names are present
 - 🎨 Avatar color selector: All colors now displayed in a grid layout (6 columns) for easier selection

@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.stolz.connect.ui.theme.Dimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +46,9 @@ fun AboutScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-                .padding(24.dp)
+                .padding(Dimensions.large)
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(Dimensions.large)
         ) {
             // App Icon/Title
             Row(
@@ -61,7 +62,7 @@ fun AboutScreen(
                     modifier = Modifier.size(64.dp),
                     tint = MaterialTheme.colorScheme.primary
                 )
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(Dimensions.medium))
                 Text(
                     text = "Connect",
                     style = MaterialTheme.typography.headlineLarge,
@@ -90,7 +91,7 @@ fun AboutScreen(
             )
             
             Column(
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(Dimensions.medium)
             ) {
                 HowToStep(
                     number = "1",
@@ -126,7 +127,7 @@ fun AboutScreen(
                 text = "Connections are color-coded to help you quickly see who needs attention:",
                 style = MaterialTheme.typography.bodyLarge
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimensions.xsmall))
             ColorCodingRule(
                 colorName = "Green",
                 color = Color(0xFF4CAF50),
@@ -152,13 +153,13 @@ fun AboutScreen(
                 fontWeight = FontWeight.Bold
             )
             
-            FeatureItem("📅 Flexible Reminders", "Set daily, weekly, monthly, or custom reminder frequencies")
-            FeatureItem("📞 Multiple Contact Methods", "Call, message, or email your contacts directly from the app")
-            FeatureItem("🎨 Visual Indicators", "Color-coded contacts help you see who needs attention")
-            FeatureItem("📝 Notes & Birthdays", "Keep track of important information and special dates")
-            FeatureItem("🔄 Automatic Scheduling", "The app automatically calculates your next reminder date")
+            FeatureItem("Flexible Reminders", "Set daily, weekly, monthly, or custom reminder frequencies")
+            FeatureItem("Multiple Contact Methods", "Call, message, or email your contacts directly from the app")
+            FeatureItem("Visual Indicators", "Color-coded contacts help you see who needs attention")
+            FeatureItem("Notes & Birthdays", "Keep track of important information and special dates")
+            FeatureItem("Automatic Scheduling", "The app automatically calculates your next reminder date")
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.medium))
             
             Text(
                 text = "Stay connected with the people who matter most.",
@@ -178,7 +179,7 @@ fun HowToStep(
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.medium)
     ) {
         Surface(
             modifier = Modifier.size(40.dp),
@@ -199,7 +200,7 @@ fun HowToStep(
         }
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
         ) {
             Text(
                 text = title,
@@ -223,8 +224,8 @@ fun FeatureItem(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+            .padding(vertical = Dimensions.xsmall),
+        verticalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
     ) {
         Text(
             text = title,
@@ -248,12 +249,12 @@ fun ColorCodingRule(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+            .padding(vertical = Dimensions.xsmall),
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.small),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Surface(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(Dimensions.large),
             shape = MaterialTheme.shapes.small,
             color = color
         ) {}

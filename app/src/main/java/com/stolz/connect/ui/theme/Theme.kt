@@ -14,7 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.stolz.connect.data.preferences.ThemeMode
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF5B5FCF), // Muted darker indigo for dark theme
+    primary = ConnectPrimary, // Same blue as light theme and frequency pills
     secondary = Color(0xFF6D4DD9), // Muted darker purple for dark theme
     tertiary = Color(0xFFC2185B), // Muted darker pink for dark theme
     background = Color(0xFF121212),

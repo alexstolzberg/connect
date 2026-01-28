@@ -1,5 +1,6 @@
 package com.stolz.connect.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -83,24 +84,14 @@ fun SnoozeBottomSheet(
                 }
             )
             
-            Spacer(modifier = Modifier.height(Dimensions.small))
+            Divider(modifier = Modifier.padding(vertical = Dimensions.small))
             
             // Custom date picker option
-            Button(
-                onClick = { showDatePicker = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer
-                )
-            ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                Spacer(modifier = Modifier.width(Dimensions.xsmall))
-                Text("Pick a date")
-            }
+            SnoozeOption(
+                label = "Pick a date",
+                icon = Icons.Default.DateRange,
+                onClick = { showDatePicker = true }
+            )
             
             Spacer(modifier = Modifier.height(Dimensions.medium))
         }
@@ -149,15 +140,30 @@ fun SnoozeBottomSheet(
 @Composable
 private fun SnoozeOption(
     label: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedButton(
-        onClick = onClick,
+    Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = Dimensions.xsmall)
+            .clickable(onClick = onClick)
+            .padding(vertical = Dimensions.medium, horizontal = Dimensions.small),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(label)
+        if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.width(Dimensions.small))
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface
+        )
     }
 }

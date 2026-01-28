@@ -31,6 +31,7 @@ import com.stolz.connect.ui.theme.ConnectionColors
 import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.ui.theme.AvatarColors
 import com.stolz.connect.util.ContactColorCategory
+import com.stolz.connect.util.NameUtils
 import com.stolz.connect.util.PhoneNumberFormatter
 import com.stolz.connect.util.TimeFormatter
 import kotlinx.coroutines.delay
@@ -194,7 +195,7 @@ fun ConnectionItem(
             containerColor = colors.backgroundColor
         ),
         border = BorderStroke(
-            width = 2.dp,
+            width = Dimensions.xxxsmall,
             color = colors.outlineColor
         )
     ) {
@@ -216,6 +217,7 @@ fun ConnectionItem(
                         onMessageClick = onMessageClick,
                         onEmailClick = onEmailClick,
                         colorCategory = colorCategory,
+                        refreshTrigger = refreshTrigger,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -232,44 +234,42 @@ fun ConnectionItem(
                 )
             }
             
-            // Show action buttons for past due or today items
-            if (connection.isPastDue || connection.isDueToday) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(Dimensions.xsmall)
-                ) {
-                    // Snooze button
-                    if (onSnoozeClick != null) {
-                        IconButton(
-                            onClick = onSnoozeClick,
-                            modifier = Modifier.size(48.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Snooze,
-                                contentDescription = "Snooze",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
-                    
-                    // Checkmark button
+            // Show action buttons for all items
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(Dimensions.xsmall)
+            ) {
+                // Snooze button
+                if (onSnoozeClick != null) {
                     IconButton(
-                        onClick = animationState.handleMarkComplete,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .scale(animationState.checkmarkScaleAnim)
+                        onClick = onSnoozeClick,
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = if (animationState.checkmarkState == 2) {
-                                Icons.Default.CheckCircle
-                            } else {
-                                Icons.Outlined.CheckCircle
-                            },
-                            contentDescription = "Mark as Contacted",
-                            tint = animationState.checkmarkColor
+                            imageVector = Icons.Outlined.Snooze,
+                            contentDescription = "Snooze",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
+                }
+                
+                // Checkmark button
+                IconButton(
+                    onClick = animationState.handleMarkComplete,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .scale(animationState.checkmarkScaleAnim)
+                ) {
+                    Icon(
+                        imageVector = if (animationState.checkmarkState == 2) {
+                            Icons.Default.CheckCircle
+                        } else {
+                            Icons.Outlined.CheckCircle
+                        },
+                        contentDescription = "Mark as Contacted",
+                        tint = animationState.checkmarkColor
+                    )
                 }
             }
         }
@@ -294,7 +294,7 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
         } else {
             AvatarColors.getColorForName(connection.contactName)
         }
-        val initials = getInitials(connection.contactName)
+        val initials = NameUtils.getInitials(connection.contactName)
         
         Surface(
             modifier = Modifier.size(40.dp),
@@ -314,14 +314,6 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
     }
 }
 
-private fun getInitials(name: String): String {
-    val parts = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
-    return when {
-        parts.isEmpty() -> "?"
-        parts.size == 1 -> parts[0].take(1).uppercase()
-        else -> "${parts[0].first()}${parts.last().first()}".uppercase()
-    }
-}
 
 @Composable
 private fun ConnectionItemContent(
@@ -331,14 +323,16 @@ private fun ConnectionItemContent(
     onMessageClick: () -> Unit,
     onEmailClick: (() -> Unit)?,
     colorCategory: ContactColorCategory,
+    refreshTrigger: Int,
     modifier: Modifier = Modifier
 ) {
     val isDarkTheme = isSystemInDarkTheme()
     // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
+    // In light mode: all backgrounds are light (use dark text)
     val textColor = if (isDarkTheme) {
         when (colorCategory) {
             ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A) // Light backgrounds need dark text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
         }
     } else {
         MaterialTheme.colorScheme.onSurface
@@ -351,7 +345,7 @@ private fun ConnectionItemContent(
             fontWeight = FontWeight.Bold,
             color = textColor
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(Dimensions.xxsmall))
         
         if (connection.contactPhoneNumber != null) {
             val phoneActions = mutableListOf<DataRowAction>()
@@ -408,11 +402,42 @@ private fun ConnectionItemContent(
             if (connection.contactPhoneNumber != null || connection.contactEmail != null) {
                 Spacer(modifier = Modifier.height(3.dp))
             }
-            DataRow(
-                label = "Birthday",
-                value = dateFormat.format(connection.birthday),
-                colorCategory = colorCategory
-            )
+            // Check if today is the birthday
+            val isBirthdayToday = remember(connection.birthday, refreshTrigger) {
+                if (connection.birthday == null) false else {
+                    val today = Date()
+                    val todayCalendar = Calendar.getInstance().apply {
+                        time = today
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    val birthdayCalendar = Calendar.getInstance().apply {
+                        time = connection.birthday
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    todayCalendar.get(Calendar.DAY_OF_MONTH) == birthdayCalendar.get(Calendar.DAY_OF_MONTH) &&
+                    todayCalendar.get(Calendar.MONTH) == birthdayCalendar.get(Calendar.MONTH)
+                }
+            }
+            
+            if (isBirthdayToday) {
+                DataRow(
+                    label = "Birthday",
+                    value = "🎉 Today!",
+                    colorCategory = colorCategory
+                )
+            } else {
+                DataRow(
+                    label = "Birthday",
+                    value = dateFormat.format(connection.birthday),
+                    colorCategory = colorCategory
+                )
+            }
         }
         
         if (connection.notes != null && connection.notes.isNotBlank()) {
@@ -439,10 +464,11 @@ private fun ConnectionItemMetadata(
 ) {
     val isDarkTheme = isSystemInDarkTheme()
     // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
+    // In light mode: all backgrounds are light (use dark text)
     val textColor = if (isDarkTheme) {
         when (colorCategory) {
-            ContactColorCategory.GREEN -> Color.White.copy(alpha = 0.9f) // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A).copy(alpha = 0.8f) // Light backgrounds need dark text
+            ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
         }
     } else {
         MaterialTheme.colorScheme.onSurfaceVariant
@@ -451,15 +477,25 @@ private fun ConnectionItemMetadata(
     val valueColor = if (isDarkTheme) {
         when (colorCategory) {
             ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF1A1A1A) // Light backgrounds need dark text
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
         }
     } else {
         MaterialTheme.colorScheme.onSurface
     }
     
+    // Error text color for "Never contacted" - ensure good contrast
+    val errorTextColor = if (isDarkTheme) {
+        when (colorCategory) {
+            ContactColorCategory.GREEN -> Color(0xFFFF6B6B) // Light red on dark green background
+            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFFD32F2F) // Darker red on light backgrounds
+        }
+    } else {
+        MaterialTheme.colorScheme.error
+    }
+    
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+        horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
     ) {
         Text(
             text = "Next:",
@@ -478,7 +514,7 @@ private fun ConnectionItemMetadata(
                 imageVector = Icons.Outlined.Snooze,
                 contentDescription = "Snoozed",
                 tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(Dimensions.medium)
             )
         }
     }
@@ -487,7 +523,7 @@ private fun ConnectionItemMetadata(
         Spacer(modifier = Modifier.height(3.dp))
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
         ) {
             Text(
                 text = "Last:",
@@ -506,7 +542,7 @@ private fun ConnectionItemMetadata(
         Text(
             text = "Never contacted",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
+            color = errorTextColor,
             fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
         )
     }

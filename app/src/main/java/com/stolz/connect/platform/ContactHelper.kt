@@ -135,6 +135,56 @@ object ContactHelper {
         }
     }
     
+    fun canOpenContactInPhone(context: Context, contactId: String): Boolean {
+        return try {
+            // Build contact URI
+            val contactUri = android.content.ContentUris.withAppendedId(
+                android.provider.ContactsContract.Contacts.CONTENT_URI,
+                contactId.toLong()
+            )
+            
+            // Get lookup key and build lookup URI
+            val cursor = context.contentResolver.query(
+                contactUri,
+                arrayOf(android.provider.ContactsContract.Contacts.LOOKUP_KEY),
+                null,
+                null,
+                null
+            )
+            
+            var finalUri: android.net.Uri? = null
+            
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val lookupKeyIndex = it.getColumnIndex(android.provider.ContactsContract.Contacts.LOOKUP_KEY)
+                    if (lookupKeyIndex >= 0) {
+                        val lookupKey = it.getString(lookupKeyIndex)
+                        if (lookupKey != null) {
+                            finalUri = android.net.Uri.withAppendedPath(
+                                android.provider.ContactsContract.Contacts.CONTENT_LOOKUP_URI,
+                                lookupKey
+                            )
+                        }
+                    }
+                }
+            }
+            
+            // Fallback to contact URI if lookup failed
+            if (finalUri == null) {
+                finalUri = contactUri
+            }
+            
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                data = finalUri
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+            
+            intent.resolveActivity(context.packageManager) != null
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
     fun openContactInPhone(context: Context, contactId: String) {
         try {
             android.util.Log.d("ContactHelper", "Opening contact with ID: $contactId")

@@ -169,6 +169,33 @@ class AddEditViewModel @Inject constructor(
             return
         }
         
+        // Validate preferred method matches available data
+        val hasPhone = !state.contactPhoneNumber.isNullOrBlank()
+        val hasEmail = !state.contactEmail.isNullOrBlank()
+        val preferredMethodValid = when (state.preferredMethod) {
+            ConnectionMethod.CALL, ConnectionMethod.MESSAGE -> {
+                if (!hasPhone) {
+                    _saveResult.value = SaveResult.Error("Please enter a phone number to use Call or Message as preferred method")
+                    return
+                }
+                true
+            }
+            ConnectionMethod.EMAIL -> {
+                if (!hasEmail) {
+                    _saveResult.value = SaveResult.Error("Please enter an email address to use Email as preferred method")
+                    return
+                }
+                true
+            }
+            ConnectionMethod.BOTH -> {
+                if (!hasPhone && !hasEmail) {
+                    _saveResult.value = SaveResult.Error("Please enter at least a phone number or email address")
+                    return
+                }
+                true
+            }
+        }
+        
         viewModelScope.launch {
             try {
                 android.util.Log.d("AddEditViewModel", "Starting save process...")

@@ -1,5 +1,6 @@
 package com.stolz.connect.ui.navigation
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -9,8 +10,10 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.stolz.connect.ui.theme.ConnectPrimary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,9 +66,14 @@ fun MainScreen(navController: NavHostController) {
                 FloatingActionButton(
                     onClick = {
                         navController.navigate(Screen.AddEdit.createRoute(null))
-                    }
+                    },
+                    containerColor = ConnectPrimary
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Add Connection")
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add Connection",
+                        tint = Color.White
+                    )
                 }
             }
         },
@@ -88,17 +96,44 @@ fun AnimatedNavigationBar(
         TabItem("Settings", Icons.Default.Settings)
     )
     
-    NavigationBar {
+    // Use ConnectPrimary (same blue as frequency pills)
+    val darkBlue = ConnectPrimary
+    
+    NavigationBar(
+        containerColor = MaterialTheme.colorScheme.surface
+    ) {
         tabs.forEachIndexed { index, tab ->
             NavigationBarItem(
                 icon = { 
-                    Icon(tab.icon, contentDescription = tab.label)
+                    Icon(
+                        imageVector = tab.icon,
+                        contentDescription = tab.label,
+                        tint = if (selectedIndex == index) {
+                            Color.White // White icon when selected
+                        } else {
+                            darkBlue // Dark blue icon when not selected
+                        }
+                    )
                 },
                 label = { 
-                    Text(tab.label)
+                    Text(
+                        text = tab.label,
+                        color = if (selectedIndex == index) {
+                            darkBlue // Blue text when selected (not white)
+                        } else {
+                            darkBlue // Dark blue text when not selected
+                        }
+                    )
                 },
                 selected = selectedIndex == index,
-                onClick = { onTabSelected(index) }
+                onClick = { onTabSelected(index) },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White, // White icon when selected
+                    selectedTextColor = darkBlue, // Blue text when selected
+                    indicatorColor = darkBlue, // Dark blue fill
+                    unselectedIconColor = darkBlue, // Dark blue icon when not selected
+                    unselectedTextColor = darkBlue // Dark blue text when not selected
+                )
             )
         }
     }

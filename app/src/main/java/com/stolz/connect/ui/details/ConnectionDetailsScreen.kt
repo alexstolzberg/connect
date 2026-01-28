@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -32,7 +33,9 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
 import com.stolz.connect.platform.ContactHelper
 import com.stolz.connect.util.ContactColorCategory
+import com.stolz.connect.util.StringUtils
 import com.stolz.connect.util.TimeFormatter
+import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.util.PhoneNumberFormatter
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
@@ -188,8 +191,8 @@ fun ConnectionDetailsScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(paddingValues)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        .padding(Dimensions.medium),
+                    verticalArrangement = Arrangement.spacedBy(Dimensions.medium)
                 ) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
@@ -202,8 +205,8 @@ fun ConnectionDetailsScreen(
                         )
                     ) {
                         Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                            modifier = Modifier.padding(Dimensions.medium),
+                            verticalArrangement = Arrangement.spacedBy(Dimensions.small)
                         ) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -218,26 +221,57 @@ fun ConnectionDetailsScreen(
                                 )
                                 // Show connection type badge
                                 if (connection.contactId != null) {
-                                    TextButton(
-                                        onClick = {
-                                            try {
-                                                ContactHelper.openContactInPhone(context, connection.contactId)
-                                            } catch (e: Exception) {
-                                                android.widget.Toast.makeText(
-                                                    context,
-                                                    "Unable to open contact",
-                                                    android.widget.Toast.LENGTH_SHORT
-                                                ).show()
+                                    val canOpenContact = remember(connection.contactId) {
+                                        ContactHelper.canOpenContactInPhone(context, connection.contactId)
+                                    }
+                                    Surface(
+                                        color = if (canOpenContact) {
+                                            MaterialTheme.colorScheme.primaryContainer
+                                        } else {
+                                            MaterialTheme.colorScheme.surfaceVariant
+                                        },
+                                        shape = MaterialTheme.shapes.small,
+                                        modifier = if (canOpenContact) {
+                                            Modifier.clickable {
+                                                try {
+                                                    ContactHelper.openContactInPhone(context, connection.contactId)
+                                                } catch (e: Exception) {
+                                                    android.widget.Toast.makeText(
+                                                        context,
+                                                        "Unable to open contact",
+                                                        android.widget.Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
                                             }
+                                        } else {
+                                            Modifier
                                         }
                                     ) {
-                                        Icon(
-                                            Icons.Default.Person,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text("View Contact", style = MaterialTheme.typography.labelSmall)
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = Dimensions.xsmall, vertical = Dimensions.xxsmall),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Person,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(Dimensions.medium),
+                                                tint = if (canOpenContact) {
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                }
+                                            )
+                                            Text(
+                                                text = "View Contact",
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = if (canOpenContact) {
+                                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                                } else {
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                                }
+                                            )
+                                        }
                                     }
                                 } else {
                                     Surface(
@@ -245,10 +279,10 @@ fun ConnectionDetailsScreen(
                                         shape = MaterialTheme.shapes.small
                                     ) {
                                         Text(
-                                            text = "Custom Connection",
+                                            text = "Manual Input",
                                             style = MaterialTheme.typography.labelSmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                            modifier = Modifier.padding(horizontal = Dimensions.xsmall, vertical = Dimensions.xxsmall)
                                         )
                                     }
                                 }
@@ -284,7 +318,7 @@ fun ConnectionDetailsScreen(
                             
                             InfoRow(
                                 "Frequency", 
-                                if (connection.reminderFrequencyDays == 1) "1 day" else "${connection.reminderFrequencyDays} days"
+                                StringUtils.pluralize(connection.reminderFrequencyDays, "day", "days")
                             )
                             InfoRow(
                                 "Method", 
@@ -306,7 +340,7 @@ fun ConnectionDetailsScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Row(
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
@@ -320,7 +354,7 @@ fun ConnectionDetailsScreen(
                                             imageVector = Icons.Outlined.Snooze,
                                             contentDescription = "Snoozed",
                                             tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier.size(16.dp)
+                                            modifier = Modifier.size(Dimensions.medium)
                                         )
                                     }
                                 }
@@ -336,7 +370,7 @@ fun ConnectionDetailsScreen(
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                     Row(
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Text(
@@ -386,7 +420,7 @@ fun ConnectionDetailsScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(scrollState),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                     ) {
                         if (connection.contactPhoneNumber != null &&
                             (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
@@ -398,7 +432,7 @@ fun ConnectionDetailsScreen(
                                 }
                             ) {
                                 Icon(Icons.Default.Phone, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Call")
                             }
                         }
@@ -412,7 +446,7 @@ fun ConnectionDetailsScreen(
                                 }
                             ) {
                                 Icon(Icons.Default.Send, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Message")
                             }
                         }
@@ -426,7 +460,7 @@ fun ConnectionDetailsScreen(
                                 }
                             ) {
                                 Icon(Icons.Default.Email, contentDescription = null)
-                                Spacer(modifier = Modifier.width(8.dp))
+                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Email")
                             }
                         }
@@ -446,28 +480,6 @@ fun ConnectionDetailsScreen(
                         }
                     }
                     
-                    // Add to Contacts button for custom connections
-                    if (connection.contactId == null) {
-                        OutlinedButton(
-                            onClick = {
-                                ContactHelper.addContactToPhone(
-                                    context,
-                                    connection.contactName,
-                                    connection.contactPhoneNumber,
-                                    connection.contactEmail
-                                )
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                Icons.Default.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Add to Contacts")
-                        }
-                    }
                     
                     if (deleteResult is DeleteResult.Error) {
                         Text(

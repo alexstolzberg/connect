@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -52,9 +53,13 @@ import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import java.io.File
 import com.stolz.connect.ui.theme.AvatarColors
+import com.stolz.connect.ui.theme.Dimensions
+import com.stolz.connect.ui.shared.PillButton
+import com.stolz.connect.util.NameUtils
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddEditScreen(
     connectionId: Long?,
@@ -184,8 +189,17 @@ fun AddEditScreen(
     }
     
     // Check if form is valid (name required, and either phone or email required)
+    // Also validate that preferred method matches available data
+    val hasPhone = !uiState.contactPhoneNumber.isNullOrBlank()
+    val hasEmail = !uiState.contactEmail.isNullOrBlank()
+    val preferredMethodValid = when (uiState.preferredMethod) {
+        ConnectionMethod.CALL, ConnectionMethod.MESSAGE -> hasPhone
+        ConnectionMethod.EMAIL -> hasEmail
+        ConnectionMethod.BOTH -> hasPhone || hasEmail
+    }
     val isFormValid = uiState.contactName.isNotBlank() && 
-                     (!uiState.contactPhoneNumber.isNullOrBlank() || !uiState.contactEmail.isNullOrBlank())
+                     (hasPhone || hasEmail) &&
+                     preferredMethodValid
     
     Scaffold(
         topBar = {
@@ -215,8 +229,8 @@ fun AddEditScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(Dimensions.medium),
+            verticalArrangement = Arrangement.spacedBy(Dimensions.medium)
         ) {
             // Contact photo
             Row(
@@ -263,7 +277,7 @@ fun AddEditScreen(
                 
                 // Get initials
                 val initials = remember(uiState.contactName) {
-                    getInitials(uiState.contactName)
+                    NameUtils.getInitials(uiState.contactName)
                 }
                 
                 // Update photoUri when uiState changes
@@ -353,34 +367,57 @@ fun AddEditScreen(
                 Box(
                     modifier = Modifier
                         .size(120.dp)
-                        .clip(CircleShape)
-                        .clickable { showPhotoOptions = true },
-                    contentAlignment = Alignment.Center
                 ) {
-                    if (photoUri != null) {
-                        AsyncImage(
-                            model = photoUri,
-                            contentDescription = "Contact Photo",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(CircleShape),
-                            contentScale = ContentScale.Crop
-                        )
-                    } else {
-                        Surface(
-                            modifier = Modifier.fillMaxSize(),
-                            shape = CircleShape,
-                            color = avatarColor
-                        ) {
-                            Box(contentAlignment = Alignment.Center) {
-                                Text(
-                                    text = initials,
-                                    style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = androidx.compose.ui.graphics.Color.White
-                                )
+                    Box(
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .clickable { showPhotoOptions = true }
+                    ) {
+                        if (photoUri != null) {
+                            AsyncImage(
+                                model = photoUri,
+                                contentDescription = "Contact Photo",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(CircleShape),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Surface(
+                                modifier = Modifier.fillMaxSize(),
+                                shape = CircleShape,
+                                color = avatarColor
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Text(
+                                        text = initials,
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = androidx.compose.ui.graphics.Color.White
+                                    )
+                                }
                             }
                         }
+                    }
+                    // Edit icon in bottom right corner - positioned on top of avatar, outside the clipped area
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .offset(x = (-4).dp, y = (-4).dp)
+                            .clickable { showPhotoOptions = true },
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = Dimensions.xxsmall
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Edit Photo",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier
+                                .size(36.dp)
+                                .padding(Dimensions.xsmall)
+                        )
                     }
                 }
                 
@@ -391,7 +428,7 @@ fun AddEditScreen(
                         title = { Text("Select Photo") },
                         text = {
                             Column(
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                                verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                             ) {
                                 TextButton(
                                     onClick = {
@@ -409,7 +446,7 @@ fun AddEditScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Icon(Icons.Default.Photo, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                     Text("Choose from Gallery")
                                 }
                                 TextButton(
@@ -426,7 +463,7 @@ fun AddEditScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Icon(Icons.Default.CameraAlt, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                     Text("Take Photo")
                                 }
                                 if (photoUri != null) {
@@ -442,19 +479,19 @@ fun AddEditScreen(
                                     }
                                 }
                                 
-                                Divider(modifier = Modifier.padding(vertical = 8.dp))
+                                Divider(modifier = Modifier.padding(vertical = Dimensions.xsmall))
                                 
                                 Text(
                                     text = "Choose Avatar Color",
                                     style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.padding(bottom = 4.dp)
+                                    modifier = Modifier.padding(bottom = Dimensions.xxsmall)
                                 )
                                 
                                 // Color palette grid - wrapped to multiple rows
                                 LazyVerticalGrid(
                                     columns = GridCells.Fixed(6),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
+                                    verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(120.dp)
@@ -469,9 +506,9 @@ fun AddEditScreen(
                                         )
                                         val isSelected = uiState.avatarColor == colorInt
                                         
-                                        Box(
+                                        Surface(
                                             modifier = Modifier
-                                                .size(48.dp)
+                                                .size(40.dp)
                                                 .clip(CircleShape)
                                                 .clickable {
                                                     viewModel.updateAvatarColor(colorInt)
@@ -488,14 +525,9 @@ fun AddEditScreen(
                                                         Modifier
                                                     }
                                                 ),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Surface(
-                                                modifier = Modifier.fillMaxSize(),
-                                                shape = CircleShape,
-                                                color = color
-                                            ) {}
-                                        }
+                                            shape = CircleShape,
+                                            color = color
+                                        ) {}
                                     }
                                 }
                             }
@@ -509,7 +541,7 @@ fun AddEditScreen(
                 }
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(Dimensions.xsmall))
             
             // Contact selection
             OutlinedButton(
@@ -519,7 +551,7 @@ fun AddEditScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(Icons.Default.Person, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                 Text("Pick from Contacts")
             }
             
@@ -568,45 +600,24 @@ fun AddEditScreen(
             Text("Reminder Frequency (days)", style = MaterialTheme.typography.labelLarge)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
-                    onClick = { viewModel.updateReminderFrequencyDays(7) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.reminderFrequencyDays == 7) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        }
-                    )
-                ) {
-                    Text("Weekly")
-                }
-                Button(
-                    onClick = { viewModel.updateReminderFrequencyDays(14) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.reminderFrequencyDays == 14) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        }
-                    )
-                ) {
-                    Text("Bi-weekly")
-                }
-                Button(
-                    onClick = { viewModel.updateReminderFrequencyDays(30) },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (uiState.reminderFrequencyDays == 30) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.surfaceVariant
-                        }
-                    )
-                ) {
-                    Text("Monthly")
-                }
+                PillButton(
+                    label = "Weekly",
+                    isSelected = uiState.reminderFrequencyDays == 7,
+                    onClick = { viewModel.updateReminderFrequencyDays(7) }
+                )
+                PillButton(
+                    label = "Bi-weekly",
+                    isSelected = uiState.reminderFrequencyDays == 14,
+                    onClick = { viewModel.updateReminderFrequencyDays(14) }
+                )
+                PillButton(
+                    label = "Monthly",
+                    isSelected = uiState.reminderFrequencyDays == 30,
+                    onClick = { viewModel.updateReminderFrequencyDays(30) }
+                )
             }
             var customDaysText by remember { mutableStateOf(uiState.reminderFrequencyDays.toString()) }
             LaunchedEffect(uiState.reminderFrequencyDays) {
@@ -623,41 +634,44 @@ fun AddEditScreen(
                 singleLine = true
             )
             
-            // Preferred method
+            // Preferred method - always show all pills
             val phoneNumber = uiState.contactPhoneNumber
             val email = uiState.contactEmail
             val hasPhone = !phoneNumber.isNullOrBlank()
             val hasEmail = !email.isNullOrBlank()
             
             Text("Preferred Method", style = MaterialTheme.typography.labelLarge)
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
+                verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
             ) {
-                if (hasPhone) {
-                    FilterChip(
-                        selected = uiState.preferredMethod == ConnectionMethod.CALL,
-                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.CALL) },
-                        label = { Text("Call") }
-                    )
-                    FilterChip(
-                        selected = uiState.preferredMethod == ConnectionMethod.MESSAGE,
-                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.MESSAGE) },
-                        label = { Text("Message") }
-                    )
-                }
-                if (hasEmail) {
-                    FilterChip(
-                        selected = uiState.preferredMethod == ConnectionMethod.EMAIL,
-                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.EMAIL) },
-                        label = { Text("Email") }
-                    )
-                }
-                if (hasPhone && hasEmail) {
-                    FilterChip(
-                        selected = uiState.preferredMethod == ConnectionMethod.BOTH,
-                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.BOTH) },
-                        label = { Text("No Preference") }
+                // Always show Call and Message, but disable if no phone
+                PillButton(
+                    label = "Call",
+                    isSelected = uiState.preferredMethod == ConnectionMethod.CALL,
+                    onClick = { viewModel.updatePreferredMethod(ConnectionMethod.CALL) },
+                    enabled = hasPhone
+                )
+                PillButton(
+                    label = "Message",
+                    isSelected = uiState.preferredMethod == ConnectionMethod.MESSAGE,
+                    onClick = { viewModel.updatePreferredMethod(ConnectionMethod.MESSAGE) },
+                    enabled = hasPhone
+                )
+                // Always show Email, but disable if no email
+                PillButton(
+                    label = "Email",
+                    isSelected = uiState.preferredMethod == ConnectionMethod.EMAIL,
+                    onClick = { viewModel.updatePreferredMethod(ConnectionMethod.EMAIL) },
+                    enabled = hasEmail
+                )
+                // Always show No Preference if at least one contact method is available
+                if (hasPhone || hasEmail) {
+                    PillButton(
+                        label = "No Preference",
+                        isSelected = uiState.preferredMethod == ConnectionMethod.BOTH,
+                        onClick = { viewModel.updatePreferredMethod(ConnectionMethod.BOTH) }
                     )
                 }
             }
@@ -676,8 +690,15 @@ fun AddEditScreen(
                         text = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(uiState.birthday),
                         style = MaterialTheme.typography.bodyMedium
                     )
-                    TextButton(onClick = { viewModel.updateBirthday(null) }) {
-                        Text("Clear")
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
+                    ) {
+                        TextButton(onClick = { showDatePicker = true }) {
+                            Text("Edit")
+                        }
+                        TextButton(onClick = { viewModel.updateBirthday(null) }) {
+                            Text("Clear")
+                        }
                     }
                 }
             } else {
@@ -709,15 +730,22 @@ fun AddEditScreen(
                         TextButton(
                             onClick = {
                                 datePickerState.selectedDateMillis?.let { millis ->
-                                    // Normalize to midnight in local timezone to avoid timezone issues
-                                    val calendar = Calendar.getInstance().apply {
+                                    // DatePicker returns UTC milliseconds, but we want to interpret it as a local date
+                                    // Convert to local calendar to get the date components
+                                    val utcCalendar = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC")).apply {
                                         timeInMillis = millis
+                                    }
+                                    // Create a new calendar in local timezone with the same date components
+                                    val localCalendar = Calendar.getInstance().apply {
+                                        set(Calendar.YEAR, utcCalendar.get(Calendar.YEAR))
+                                        set(Calendar.MONTH, utcCalendar.get(Calendar.MONTH))
+                                        set(Calendar.DAY_OF_MONTH, utcCalendar.get(Calendar.DAY_OF_MONTH))
                                         set(Calendar.HOUR_OF_DAY, 0)
                                         set(Calendar.MINUTE, 0)
                                         set(Calendar.SECOND, 0)
                                         set(Calendar.MILLISECOND, 0)
                                     }
-                                    viewModel.updateBirthday(calendar.time)
+                                    viewModel.updateBirthday(localCalendar.time)
                                 }
                                 showDatePicker = false
                             }
@@ -763,7 +791,7 @@ fun AddEditScreen(
                 maxLines = 5
             )
             
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.medium))
             
             // Error message
             if (saveResult is SaveResult.Error) {
@@ -777,11 +805,4 @@ fun AddEditScreen(
     }
 }
 
-private fun getInitials(name: String): String {
-    val parts = name.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
-    return when {
-        parts.isEmpty() -> "?"
-        parts.size == 1 -> parts[0].take(1).uppercase()
-        else -> "${parts[0].first()}${parts.last().first()}".uppercase()
-    }
-}
+

@@ -16,6 +16,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.stolz.connect.ui.theme.Dimensions
 import androidx.compose.foundation.Image
 import kotlinx.coroutines.delay
 
@@ -69,7 +70,7 @@ fun Splash(alpha: Float) {
                     .size(120.dp)
                     .alpha(alpha = alpha)
             )
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(Dimensions.large))
             Text(
                 text = "Connect",
                 fontSize = 48.sp,
@@ -77,7 +78,7 @@ fun Splash(alpha: Float) {
                 color = Color.White,
                 modifier = Modifier.alpha(alpha = alpha)
             )
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(Dimensions.medium))
             Text(
                 text = "Stay connected with the people who matter",
                 fontSize = 16.sp,
