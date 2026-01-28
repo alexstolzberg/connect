@@ -163,12 +163,13 @@ fun InboxScreen(
                             top = paddingValues.calculateTopPadding() + Dimensions.medium,
                             start = Dimensions.medium,
                             end = Dimensions.medium,
-                            bottom = Dimensions.medium
+                            bottom = paddingValues.calculateBottomPadding() + Dimensions.medium + 80.dp // Extra space for FAB
                         ),
                         verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                     ) {
+                        // Flatten sections into a single list so LazyColumn can track items moving between sections
                         uiState.inboxSections.forEachIndexed { sectionIndex, section ->
-                            item(key = "header_${section.title}") {
+                            item(key = "header_${section.title}_${uiState.refreshCounter}") {
                                 Text(
                                     text = section.title,
                                     style = MaterialTheme.typography.titleMedium,
@@ -182,7 +183,7 @@ fun InboxScreen(
                             }
                             items(
                                 items = section.connections,
-                                key = { it.id }
+                                key = { "connection_${it.id}_${section.title}_${it.nextReminderDate.time}_${uiState.refreshCounter}" } // Include refreshCounter to force recomposition
                             ) { connection ->
                                 ConnectionItem(
                                     connection = connection,

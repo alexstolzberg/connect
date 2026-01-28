@@ -156,7 +156,7 @@ fun AllScreen(
                             top = paddingValues.calculateTopPadding() + 16.dp,
                             start = 16.dp,
                             end = 16.dp,
-                            bottom = 8.dp
+                            bottom = paddingValues.calculateBottomPadding() + 16.dp + 80.dp // Extra space for FAB
                         ),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {

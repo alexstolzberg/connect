@@ -117,6 +117,11 @@ The app requires the following permissions:
 - 🐛 Fixed FlowColumnScopeInstance compilation error
 - 🎨 Improved code maintainability by extracting reusable components
 
+### Version 1.4
+- 🐛 Fixed issue where connections marked as contacted didn't immediately appear in "Upcoming" section
+- 🐛 Added forced recomposition to ensure UI updates immediately when marking connections as contacted
+- 🎨 Improved state management for better UI responsiveness
+
 ### Version 1.3
 - ✨ Dark mode support with theme selection (System Default, Light, Dark)
 - ✨ Settings screen replacing About tab
