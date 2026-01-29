@@ -42,7 +42,6 @@ import coil.compose.AsyncImage
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -50,8 +49,6 @@ import androidx.compose.ui.platform.LocalContext
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
-import androidx.core.content.FileProvider
-import java.io.File
 import com.stolz.connect.ui.theme.AvatarColors
 import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.ui.shared.PillButton
@@ -240,7 +237,6 @@ fun AddEditScreen(
             ) {
                 var showPhotoOptions by remember { mutableStateOf(false) }
                 var photoUri by remember { mutableStateOf<Uri?>(null) }
-                var cameraPhotoUri by remember { mutableStateOf<Uri?>(null) }
                 
                 // Track if we've initialized the color to avoid regenerating on every recomposition
                 var colorInitialized by remember { mutableStateOf(false) }
@@ -309,58 +305,6 @@ fun AddEditScreen(
                         val photoUriString = it.toString()
                         viewModel.updateContactPhotoUri(photoUriString)
                         photoUri = it
-                    }
-                }
-                
-                // Create temporary file for camera photo
-                fun createImageFile(): File? {
-                    return try {
-                        val storageDir = context.getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
-                        File.createTempFile(
-                            "JPEG_${System.currentTimeMillis()}_",
-                            ".jpg",
-                            storageDir
-                        )
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
-                
-                // Camera launcher - must be defined before launchCamera() function
-                val cameraLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.TakePicture()
-                ) { success ->
-                    if (success && cameraPhotoUri != null) {
-                        val photoUriString = cameraPhotoUri.toString()
-                        viewModel.updateContactPhotoUri(photoUriString)
-                        photoUri = cameraPhotoUri
-                    }
-                }
-                
-                // Function to launch camera after permission is granted
-                fun launchCamera() {
-                    val imageFile = createImageFile()
-                    if (imageFile != null) {
-                        cameraPhotoUri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.fileprovider",
-                            imageFile
-                        )
-                        cameraLauncher.launch(cameraPhotoUri)
-                    } else {
-                        android.widget.Toast.makeText(context, "Could not create file for photo", android.widget.Toast.LENGTH_SHORT).show()
-                    }
-                }
-                
-                // Camera permission launcher
-                val cameraPermissionLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.RequestPermission()
-                ) { isGranted ->
-                    if (isGranted) {
-                        // Permission granted, launch camera
-                        launchCamera()
-                    } else {
-                        android.widget.Toast.makeText(context, "Camera permission is required to take photos", android.widget.Toast.LENGTH_SHORT).show()
                     }
                 }
                 
@@ -448,23 +392,6 @@ fun AddEditScreen(
                                     Icon(Icons.Default.Photo, contentDescription = null)
                                     Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                     Text("Choose from Gallery")
-                                }
-                                TextButton(
-                                    onClick = {
-                                        showPhotoOptions = false
-                                        // Check for camera permission first
-                                        if (PermissionHelper.hasCameraPermission(context)) {
-                                            launchCamera()
-                                        } else {
-                                            // Request camera permission
-                                            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Icon(Icons.Default.CameraAlt, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(Dimensions.xsmall))
-                                    Text("Take Photo")
                                 }
                                 if (photoUri != null) {
                                     TextButton(
