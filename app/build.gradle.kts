@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -8,12 +11,12 @@ plugins {
 
 android {
     namespace = "com.stolz.connect"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.stolz.connect"
         minSdk = 24
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 9  // Increment for each release
         versionName = "1.3.9"  // Match your README version
 
@@ -24,8 +27,9 @@ android {
         create("release") {
             val keystorePropertiesFile = rootProject.file("keystore.properties")
             if (keystorePropertiesFile.exists()) {
-                val keystoreProperties = java.util.Properties()
-                keystoreProperties.load(java.io.FileInputStream(keystorePropertiesFile))
+                val keystoreProperties = Properties().apply {
+                    load(FileInputStream(keystorePropertiesFile))
+                }
                 
                 storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
