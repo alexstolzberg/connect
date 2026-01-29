@@ -67,7 +67,14 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.8 (Latest)
+### Version 1.3.9 (Latest)
+- ✅ Comprehensive test suite: Added unit tests for ViewModels, Repositories, DAOs, utilities, mappers, and domain models
+- ✅ Test infrastructure: Added MockK, Turbine, Coroutines Test, Robolectric, and Room testing dependencies
+- ✅ Test coverage: Over 50+ test cases covering core functionality, validation, data transformations, and business logic
+- 🐛 Fixed phone validation to correctly count digits (excluding + sign)
+- 🐛 Fixed email validation to use platform-independent regex for JVM compatibility
+
+### Version 1.3.8
 - 🎨 Color standardization: Unified all accent colors (FAB, bottom nav, buttons, pills) to use the same blue color from frequency pills
 - 🎨 Updated dark theme primary color to match light theme for consistent blue across all themes
 - 🎨 Improved visual consistency throughout the app
