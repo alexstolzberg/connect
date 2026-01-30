@@ -4,9 +4,11 @@ import android.content.Context
 import com.stolz.connect.data.local.dao.ScheduledConnectionDao
 import com.stolz.connect.data.mapper.toDomain
 import com.stolz.connect.data.mapper.toEntity
+import com.stolz.connect.data.preferences.NotificationPreferences
 import com.stolz.connect.domain.model.ScheduledConnection
 import com.stolz.connect.util.NotificationManager
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.Calendar
 import java.util.Date
@@ -17,6 +19,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 @Singleton
 class ConnectionRepository @Inject constructor(
     private val connectionDao: ScheduledConnectionDao,
+    private val notificationPreferences: NotificationPreferences,
     @ApplicationContext private val context: Context
 ) {
     
@@ -40,17 +43,18 @@ class ConnectionRepository @Inject constructor(
         val entity = connection.toEntity()
         val insertedId = connectionDao.insertConnection(entity)
         
-        // Schedule notification for the connection
         val connectionWithId = connection.copy(id = insertedId)
-        NotificationManager.scheduleNotification(context, connectionWithId)
-        
+        if (notificationPreferences.areNotificationsEnabled()) {
+            NotificationManager.scheduleNotification(context, connectionWithId)
+        }
         return insertedId
     }
     
     suspend fun updateConnection(connection: ScheduledConnection) {
         connectionDao.updateConnection(connection.toEntity())
-        // Reschedule notification for the updated connection
-        NotificationManager.scheduleNotification(context, connection)
+        if (notificationPreferences.areNotificationsEnabled()) {
+            NotificationManager.scheduleNotification(context, connection)
+        }
     }
     
     suspend fun deleteConnection(connection: ScheduledConnection) {
@@ -69,21 +73,35 @@ class ConnectionRepository @Inject constructor(
         
         connectionDao.markAsContacted(connection.id, now, nextReminderDate)
         
-        // Reschedule notification for the next reminder date
         val updatedConnection = connection.copy(
             lastContactedDate = now,
             nextReminderDate = nextReminderDate
         )
-        NotificationManager.scheduleNotification(context, updatedConnection)
+        if (notificationPreferences.areNotificationsEnabled()) {
+            NotificationManager.scheduleNotification(context, updatedConnection)
+        }
     }
     
     suspend fun snoozeReminder(connection: ScheduledConnection, snoozeDate: Date) {
         connectionDao.snoozeReminder(connection.id, snoozeDate)
-        
-        // Reschedule notification for the snooze date
-        val updatedConnection = connection.copy(
-            nextReminderDate = snoozeDate
-        )
-        NotificationManager.scheduleNotification(context, updatedConnection)
+        val updatedConnection = connection.copy(nextReminderDate = snoozeDate)
+        if (notificationPreferences.areNotificationsEnabled()) {
+            NotificationManager.scheduleNotification(context, updatedConnection)
+        }
+    }
+
+    /** Cancels all scheduled reminder notifications (e.g. when user turns notifications off). */
+    suspend fun cancelAllScheduledNotifications() {
+        connectionDao.getAllActiveConnections().first().forEach { entity ->
+            NotificationManager.cancelNotification(context, entity.id)
+        }
+    }
+
+    /** Reschedules notifications for all active connections (e.g. when user turns notifications on). */
+    suspend fun rescheduleAllNotifications() {
+        if (!notificationPreferences.areNotificationsEnabled()) return
+        connectionDao.getAllActiveConnections().first().forEach { entity ->
+            NotificationManager.scheduleNotification(context, entity.toDomain())
+        }
     }
 }

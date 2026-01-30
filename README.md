@@ -67,7 +67,17 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.9 (Latest)
+### Version 1.3.11 (Latest)
+- 🔔 Push notifications: Right time (uses reminder time of day), tap opens contact details, message "This is a reminder to connect with [name]"
+- 🔔 Notification title "It's time to connect!" and bell icon
+- 🔔 Notifications off by default; first-launch prompt to enable (with permission request on Android 13+)
+- 🔔 Settings toggle to turn reminder notifications on/off; permission handled accordingly
+- 📝 Snackbar confirmations: Connection added, Connection updated, Connection deleted, Marked as contacted, Reminder snoozed
+- 🎨 FAB and bottom nav use MaterialTheme.colorScheme.primary (match PillButtons)
+- 🎨 Mark as Contacted button on connection details uses primary state
+- 📄 Privacy policy updated for in-app notifications control
+
+### Version 1.3.9
 - ✅ Comprehensive test suite: Added unit tests for ViewModels, Repositories, DAOs, utilities, mappers, and domain models
 - ✅ Test infrastructure: Added MockK, Turbine, Coroutines Test, Robolectric, and Room testing dependencies
 - ✅ Test coverage: Over 50+ test cases covering core functionality, validation, data transformations, and business logic

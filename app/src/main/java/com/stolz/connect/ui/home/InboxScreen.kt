@@ -40,6 +40,7 @@ import com.stolz.connect.platform.ContactHelper
 fun InboxScreen(
     onAddClick: () -> Unit,
     onConnectionClick: (Long) -> Unit,
+    onShowSnackbar: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -218,7 +219,10 @@ fun InboxScreen(
                                     onEmailClick = {
                                         connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
                                     },
-                                    onMarkComplete = { viewModel.markAsContacted(connection) },
+                                    onMarkComplete = {
+                                        viewModel.markAsContacted(connection)
+                                        onShowSnackbar("Marked as contacted")
+                                    },
                                     onSnoozeClick = { showSnoozeSheet = connection }
                                 )
                             }
@@ -239,6 +243,7 @@ fun InboxScreen(
                 onDismiss = { showSnoozeSheet = null },
                 onSnoozeSelected = { snoozeDate ->
                     viewModel.snoozeReminder(connection, snoozeDate)
+                    onShowSnackbar("Reminder snoozed")
                     showSnoozeSheet = null
                 }
             )

@@ -1,5 +1,9 @@
 package com.stolz.connect.ui.settings
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -15,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.data.preferences.ThemeMode
@@ -24,10 +30,38 @@ import com.stolz.connect.data.preferences.ThemeMode
 @Composable
 fun SettingsScreen(
     onNavigateToAbout: () -> Unit,
+    onShowSnackbar: (String) -> Unit = {},
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
-    
+    val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
+    val context = LocalContext.current
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            viewModel.setNotificationsEnabled(true)
+        } else {
+            onShowSnackbar("Permission denied. Enable notifications in system settings to receive reminders.")
+        }
+    }
+
+    fun requestNotificationPermissionIfNeeded(turnOn: Boolean) {
+        if (!turnOn) {
+            viewModel.setNotificationsEnabled(false)
+            return
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            when (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)) {
+                android.content.pm.PackageManager.PERMISSION_GRANTED -> viewModel.setNotificationsEnabled(true)
+                else -> notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        } else {
+            viewModel.setNotificationsEnabled(true)
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -41,20 +75,33 @@ fun SettingsScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Theme Section - Temporarily hidden
-            // SettingsSection(title = "Appearance") {
-            //     ThemeSettingItem(
-            //         title = "Theme",
-            //         currentMode = themeMode,
-            //         onModeSelected = { mode ->
-            //             viewModel.setThemeMode(mode)
-            //         }
-            //     )
-            // }
-            // 
-            // Divider()
-            
-            // About Section
+            SettingsSection(title = "Notifications") {
+                ListItem(
+                    headlineContent = { Text("Reminder notifications") },
+                    supportingContent = {
+                        Text(
+                            "Receive push notifications when it's time to connect",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = null
+                        )
+                    },
+                    trailingContent = {
+                        Switch(
+                            checked = notificationsEnabled,
+                            onCheckedChange = { requestNotificationPermissionIfNeeded(it) }
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            HorizontalDivider()
+
             SettingsSection(title = "About") {
                 SettingsItem(
                     title = "About Connect",
@@ -103,7 +150,7 @@ fun SettingsItem(
         },
         trailingContent = {
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -144,7 +191,7 @@ fun ThemeSettingItem(
         },
         trailingContent = {
             Icon(
-                imageVector = Icons.Default.ArrowForward,
+                imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant
             )

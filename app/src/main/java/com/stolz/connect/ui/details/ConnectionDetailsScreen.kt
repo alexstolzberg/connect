@@ -48,6 +48,7 @@ fun ConnectionDetailsScreen(
     connectionId: Long,
     onNavigateBack: () -> Unit,
     onEditClick: (Long) -> Unit,
+    onShowSnackbar: (String) -> Unit = {},
     viewModel: ConnectionDetailsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -90,6 +91,7 @@ fun ConnectionDetailsScreen(
     
     LaunchedEffect(deleteResult) {
         if (deleteResult is DeleteResult.Success) {
+            onShowSnackbar("Connection deleted")
             onNavigateBack()
         }
     }
@@ -470,10 +472,12 @@ fun ConnectionDetailsScreen(
                         Button(
                             onClick = {
                                 viewModel.markAsContacted()
+                                onShowSnackbar("Marked as contacted")
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
                             )
                         ) {
                             Text("Mark as Contacted")

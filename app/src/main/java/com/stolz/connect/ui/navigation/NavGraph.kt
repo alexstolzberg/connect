@@ -35,8 +35,20 @@ sealed class Screen(val route: String) {
 @Composable
 fun NavGraph(
     navController: NavHostController,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    pendingConnectionId: Long? = null,
+    onPendingConnectionIdConsumed: () -> Unit = {},
+    onShowSnackbar: (String) -> Unit = {}
 ) {
+    androidx.compose.runtime.LaunchedEffect(pendingConnectionId) {
+        pendingConnectionId?.let { id ->
+            navController.navigate(Screen.Inbox.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
+            }
+            navController.navigate(Screen.Details.createRoute(id))
+            onPendingConnectionIdConsumed()
+        }
+    }
     NavHost(
         navController = navController,
         startDestination = Screen.Splash.route,
@@ -59,7 +71,8 @@ fun NavGraph(
                 },
                 onConnectionClick = { connectionId ->
                     navController.navigate(Screen.Details.createRoute(connectionId))
-                }
+                },
+                onShowSnackbar = onShowSnackbar
             )
         }
         
@@ -70,7 +83,8 @@ fun NavGraph(
                 },
                 onConnectionClick = { connectionId ->
                     navController.navigate(Screen.Details.createRoute(connectionId))
-                }
+                },
+                onShowSnackbar = onShowSnackbar
             )
         }
         
@@ -78,7 +92,8 @@ fun NavGraph(
             SettingsScreen(
                 onNavigateToAbout = {
                     navController.navigate(Screen.About.route)
-                }
+                },
+                onShowSnackbar = onShowSnackbar
             )
         }
         
@@ -103,7 +118,8 @@ fun NavGraph(
                 connectionId = connectionId,
                 onNavigateBack = {
                     navController.popBackStack()
-                }
+                },
+                onShowSnackbar = onShowSnackbar
             )
         }
         
@@ -119,7 +135,8 @@ fun NavGraph(
                 },
                 onEditClick = { id ->
                     navController.navigate(Screen.AddEdit.createRoute(id))
-                }
+                },
+                onShowSnackbar = onShowSnackbar
             )
         }
     }

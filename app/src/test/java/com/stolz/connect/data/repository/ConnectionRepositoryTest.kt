@@ -4,6 +4,7 @@ import android.content.Context
 import com.stolz.connect.data.local.dao.ScheduledConnectionDao
 import com.stolz.connect.data.mapper.toDomain
 import com.stolz.connect.data.mapper.toEntity
+import com.stolz.connect.data.preferences.NotificationPreferences
 import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.domain.model.ScheduledConnection
 import com.stolz.connect.util.NotificationManager
@@ -30,20 +31,22 @@ import java.util.Date
 class ConnectionRepositoryTest {
 
     private lateinit var dao: ScheduledConnectionDao
+    private lateinit var notificationPreferences: NotificationPreferences
     private lateinit var context: Context
     private lateinit var repository: ConnectionRepository
 
     @Before
     fun setup() {
         dao = mockk()
+        notificationPreferences = mockk(relaxed = true)
+        every { notificationPreferences.areNotificationsEnabled() } returns true
         context = mockk(relaxed = true)
 
-        // Stub out NotificationManager to avoid Android AlarmManager/Notification interactions in unit tests
         mockkObject(NotificationManager)
         every { NotificationManager.scheduleNotification(any(), any()) } returns Unit
         every { NotificationManager.cancelNotification(any(), any()) } returns Unit
 
-        repository = ConnectionRepository(dao, context)
+        repository = ConnectionRepository(dao, notificationPreferences, context)
     }
 
     @Test

@@ -64,6 +64,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 fun AddEditScreen(
     connectionId: Long?,
     onNavigateBack: () -> Unit,
+    onShowSnackbar: (String) -> Unit = {},
     viewModel: AddEditViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -184,6 +185,9 @@ fun AddEditScreen(
     
     LaunchedEffect(saveResult) {
         if (saveResult is SaveResult.Success) {
+            onShowSnackbar(
+                if (connectionId != null) "Connection updated" else "Connection added"
+            )
             onNavigateBack()
         }
     }

@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.stolz.connect.MainActivity
 import com.stolz.connect.domain.model.ScheduledConnection
 import java.util.Calendar
 import java.util.Date
@@ -13,6 +14,28 @@ import java.util.Date
 object NotificationManager {
     private const val CHANNEL_ID = "connect_reminders"
     private const val NOTIFICATION_ID_BASE = 1000
+
+    /** Intent extra for opening a specific connection when the app is launched from a notification. */
+    const val EXTRA_OPEN_CONNECTION_ID = "com.stolz.connect.OPEN_CONNECTION_ID"
+    
+    /**
+     * Computes the exact alarm time: the reminder date at the user's preferred time of day (reminderTime in HH:mm),
+     * or nextReminderDate as-is if no reminderTime is set.
+     */
+    private fun alarmTimeFor(connection: ScheduledConnection): Long {
+        val cal = Calendar.getInstance().apply { time = connection.nextReminderDate }
+        val reminderTime = connection.reminderTime
+        if (!reminderTime.isNullOrBlank()) {
+            val parts = reminderTime.trim().split(":")
+            val hour = parts.getOrNull(0)?.toIntOrNull() ?: 9
+            val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+            cal.set(Calendar.HOUR_OF_DAY, hour.coerceIn(0, 23))
+            cal.set(Calendar.MINUTE, minute.coerceIn(0, 59))
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
+        }
+        return cal.timeInMillis
+    }
     
     fun scheduleNotification(context: Context, connection: ScheduledConnection) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -20,15 +43,16 @@ object NotificationManager {
         // Cancel any existing notification for this connection
         cancelNotification(context, connection.id)
         
-        // Only schedule if the reminder date is in the future
-        val now = Date()
-        if (connection.nextReminderDate.before(now) || connection.nextReminderDate == now) {
-            // If it's due today or past, show notification immediately
+        val alarmTimeMillis = alarmTimeFor(connection)
+        val now = System.currentTimeMillis()
+        
+        // If the alarm time is in the past or right now, show notification immediately
+        if (alarmTimeMillis <= now) {
             showNotification(context, connection)
             return
         }
         
-        // Create intent for the notification
+        // Create intent for the alarm (broadcast to NotificationReceiver)
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("connection_id", connection.id)
             putExtra("connection_name", connection.contactName)
@@ -41,27 +65,25 @@ object NotificationManager {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         
-        // Schedule the alarm
         try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
                 if (alarmManager.canScheduleExactAlarms()) {
                     alarmManager.setExactAndAllowWhileIdle(
                         AlarmManager.RTC_WAKEUP,
-                        connection.nextReminderDate.time,
+                        alarmTimeMillis,
                         pendingIntent
                     )
                 } else {
-                    // Fallback to inexact alarm
                     alarmManager.set(
                         AlarmManager.RTC_WAKEUP,
-                        connection.nextReminderDate.time,
+                        alarmTimeMillis,
                         pendingIntent
                     )
                 }
             } else {
                 alarmManager.setExact(
                     AlarmManager.RTC_WAKEUP,
-                    connection.nextReminderDate.time,
+                    alarmTimeMillis,
                     pendingIntent
                 )
             }
@@ -88,7 +110,6 @@ object NotificationManager {
     fun showNotification(context: Context, connection: ScheduledConnection) {
         val notificationManager = NotificationManagerCompat.from(context)
         
-        // Create notification channel if needed (for Android O+)
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             val channel = android.app.NotificationChannel(
                 CHANNEL_ID,
@@ -101,11 +122,24 @@ object NotificationManager {
             systemNotificationManager.createNotificationChannel(channel)
         }
         
+        // Tap opens the app and navigates to this contact's details
+        val contentIntent = Intent(context, MainActivity::class.java).apply {
+            putExtra(EXTRA_OPEN_CONNECTION_ID, connection.id)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val contentPendingIntent = PendingIntent.getActivity(
+            context,
+            connection.id.toInt(),
+            contentIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Time to connect with ${connection.contactName}")
-            .setContentText("Don't forget to reach out!")
+            .setSmallIcon(com.stolz.connect.R.drawable.ic_notification_bell)
+            .setContentTitle("It's time to connect!")
+            .setContentText("This is a reminder to connect with ${connection.contactName}")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(contentPendingIntent)
             .setAutoCancel(true)
             .build()
         

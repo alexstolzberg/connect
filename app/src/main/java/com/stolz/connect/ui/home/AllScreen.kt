@@ -37,6 +37,7 @@ import com.stolz.connect.platform.ContactHelper
 fun AllScreen(
     onAddClick: () -> Unit,
     onConnectionClick: (Long) -> Unit,
+    onShowSnackbar: (String) -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -198,7 +199,10 @@ fun AllScreen(
                                 onEmailClick = {
                                     connection.contactEmail?.let { ContactHelper.sendEmail(context, it) }
                                 },
-                                onMarkComplete = { viewModel.markAsContacted(connection) },
+                                onMarkComplete = {
+                                    viewModel.markAsContacted(connection)
+                                    onShowSnackbar("Marked as contacted")
+                                },
                                 onSnoozeClick = null // Snooze only available in Inbox view
                             )
                         }

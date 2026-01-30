@@ -38,7 +38,7 @@ Connect requests the following permissions to provide its core functionality:
 
 #### Notifications Permission (POST_NOTIFICATIONS)
 - **Purpose:** To send you reminders about scheduled connections
-- **Usage:** Notifications are only sent for connections you have scheduled. You can disable notifications at any time in your device settings.
+- **Usage:** Notifications are only sent for connections you have scheduled. You can turn reminder notifications on or off at any time in the app (Settings → Reminder notifications). You can also disable notifications in your device settings. On Android 13 and above, the app will request this permission when you first enable notifications in Settings.
 
 #### Alarm Permissions (SCHEDULE_EXACT_ALARM, USE_EXACT_ALARM)
 - **Purpose:** To schedule precise reminders for your connections
