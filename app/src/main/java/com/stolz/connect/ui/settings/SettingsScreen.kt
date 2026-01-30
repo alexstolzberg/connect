@@ -73,8 +73,19 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
         ) {
+            SettingsSection(title = "Appearance") {
+                ThemeSettingItem(
+                    title = "Theme",
+                    currentMode = themeMode,
+                    onModeSelected = { viewModel.setThemeMode(it) }
+                )
+            }
+
+            HorizontalDivider()
+
             SettingsSection(title = "Notifications") {
                 ListItem(
                     headlineContent = { Text("Reminder notifications") },

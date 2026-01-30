@@ -17,8 +17,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -100,7 +102,21 @@ fun MainScreen(
     }
     
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) },
+        snackbarHost = {
+            Box(Modifier.fillMaxSize()) {
+                val bottomPadding = if (currentDestination?.route == Screen.Inbox.route ||
+                    currentDestination?.route == Screen.All.route ||
+                    currentDestination?.route == Screen.Settings.route) 72.dp else 16.dp
+                SnackbarHost(
+                    hostState = snackbarHostState,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(bottom = bottomPadding)
+                )
+            }
+        },
         bottomBar = {
             // Only show bottom bar on main tabs (not on detail/edit screens or splash)
             if (currentDestination?.route == Screen.Inbox.route || 

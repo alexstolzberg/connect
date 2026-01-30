@@ -44,7 +44,10 @@ class AddEditViewModel @Inject constructor(
     
     private val _saveResult = MutableStateFlow<SaveResult?>(null)
     val saveResult: StateFlow<SaveResult?> = _saveResult.asStateFlow()
-    
+
+    private val _duplicateCandidates = MutableStateFlow<List<com.stolz.connect.domain.model.ScheduledConnection>?>(null)
+    val duplicateCandidates: StateFlow<List<com.stolz.connect.domain.model.ScheduledConnection>?> = _duplicateCandidates.asStateFlow()
+
     init {
         android.util.Log.d("AddEditViewModel", "Init: connectionId from savedStateHandle = ${savedStateHandle.get<Long>("connectionId")}, filtered = $connectionId")
         if (connectionId != null && connectionId > 0) {
@@ -199,10 +202,7 @@ class AddEditViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 android.util.Log.d("AddEditViewModel", "Starting save process...")
-                // Ensure nextReminderDate is set - if not provided, set to today
                 val nextDate = state.nextReminderDate ?: Date()
-                android.util.Log.d("AddEditViewModel", "Next reminder date: $nextDate")
-                
                 val connection = ScheduledConnection(
                     id = connectionId ?: 0,
                     contactName = state.contactName,
@@ -220,35 +220,116 @@ class AddEditViewModel @Inject constructor(
                     nextReminderDate = nextDate,
                     isActive = true
                 )
-                
-                android.util.Log.d("AddEditViewModel", "Created connection object: ${connection.contactName}, ID: ${connection.id}, Active: ${connection.isActive}")
-                
+
                 if (connectionId != null) {
-                    android.util.Log.d("AddEditViewModel", "Updating existing connection")
-                    connectionRepository.updateConnection(connection)
-                } else {
-                    android.util.Log.d("AddEditViewModel", "Inserting new connection")
-                    val insertedId = connectionRepository.insertConnection(connection)
-                    android.util.Log.d("AddEditViewModel", "Insert returned ID: $insertedId")
-                    // Verify the insert succeeded
-                    if (insertedId <= 0) {
-                        android.util.Log.e("AddEditViewModel", "Insert failed: returned ID <= 0")
-                        throw Exception("Failed to insert connection")
+                    val duplicates = connectionRepository.findPotentialDuplicates(
+                        state.contactName,
+                        state.contactPhoneNumber,
+                        state.contactEmail,
+                        excludeId = connectionId
+                    )
+                    if (duplicates.isNotEmpty()) {
+                        _duplicateCandidates.value = duplicates
+                        return@launch
                     }
+                    connectionRepository.updateConnection(connection)
+                    kotlinx.coroutines.delay(200)
+                    _saveResult.value = SaveResult.Success
+                } else {
+                    val duplicates = connectionRepository.findPotentialDuplicates(
+                        state.contactName,
+                        state.contactPhoneNumber,
+                        state.contactEmail
+                    )
+                    if (duplicates.isNotEmpty()) {
+                        _duplicateCandidates.value = duplicates
+                        return@launch
+                    }
+                    val insertedId = connectionRepository.insertConnection(connection)
+                    if (insertedId <= 0) throw Exception("Failed to insert connection")
+                    kotlinx.coroutines.delay(200)
+                    _saveResult.value = SaveResult.Success
                 }
-                
-                android.util.Log.d("AddEditViewModel", "Save successful, waiting before setting result...")
-                // Small delay to ensure database transaction completes
-                kotlinx.coroutines.delay(200)
-                _saveResult.value = SaveResult.Success
-                android.util.Log.d("AddEditViewModel", "Save result set to Success")
             } catch (e: Exception) {
                 android.util.Log.e("AddEditViewModel", "Save failed with exception", e)
                 _saveResult.value = SaveResult.Error(e.message ?: "Failed to save connection")
             }
         }
     }
-    
+
+    /** Performs insert without duplicate check (user chose "Add anyway"). */
+    fun saveConnectionIgnoringDuplicates() {
+        _duplicateCandidates.value = null
+        val state = _uiState.value
+        if (state.contactName.isBlank() || (state.contactPhoneNumber.isNullOrBlank() && state.contactEmail.isNullOrBlank())) return
+        viewModelScope.launch {
+            try {
+                val nextDate = state.nextReminderDate ?: Date()
+                val connection = ScheduledConnection(
+                    id = 0,
+                    contactName = state.contactName,
+                    contactPhoneNumber = state.contactPhoneNumber,
+                    contactEmail = state.contactEmail,
+                    contactPhotoUri = state.contactPhotoUri,
+                    avatarColor = state.avatarColor,
+                    contactId = state.contactId,
+                    reminderFrequencyDays = state.reminderFrequencyDays,
+                    preferredMethod = state.preferredMethod,
+                    reminderTime = state.reminderTime,
+                    notes = state.notes,
+                    birthday = state.birthday,
+                    promptOnBirthday = state.promptOnBirthday,
+                    nextReminderDate = nextDate,
+                    isActive = true
+                )
+                val insertedId = connectionRepository.insertConnection(connection)
+                if (insertedId <= 0) throw Exception("Failed to insert connection")
+                kotlinx.coroutines.delay(200)
+                _saveResult.value = SaveResult.Success
+            } catch (e: Exception) {
+                _saveResult.value = SaveResult.Error(e.message ?: "Failed to save connection")
+            }
+        }
+    }
+
+    /** Performs update without duplicate check (user chose "Save anyway" when editing). */
+    fun updateConnectionIgnoringDuplicates() {
+        _duplicateCandidates.value = null
+        val state = _uiState.value
+        val id = connectionId ?: return
+        viewModelScope.launch {
+            try {
+                val nextDate = state.nextReminderDate ?: Date()
+                val connection = ScheduledConnection(
+                    id = id,
+                    contactName = state.contactName,
+                    contactPhoneNumber = state.contactPhoneNumber,
+                    contactEmail = state.contactEmail,
+                    contactPhotoUri = state.contactPhotoUri,
+                    avatarColor = state.avatarColor,
+                    contactId = state.contactId,
+                    reminderFrequencyDays = state.reminderFrequencyDays,
+                    preferredMethod = state.preferredMethod,
+                    reminderTime = state.reminderTime,
+                    notes = state.notes,
+                    birthday = state.birthday,
+                    promptOnBirthday = state.promptOnBirthday,
+                    nextReminderDate = nextDate,
+                    isActive = true
+                )
+                connectionRepository.updateConnection(connection)
+                kotlinx.coroutines.delay(200)
+                _saveResult.value = SaveResult.Success
+            } catch (e: Exception) {
+                _saveResult.value = SaveResult.Error(e.message ?: "Failed to save connection")
+            }
+        }
+    }
+
+    fun clearDuplicateCandidates() {
+        _duplicateCandidates.value = null
+    }
+
     fun clearSaveResult() {
         _saveResult.value = null
     }

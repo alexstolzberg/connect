@@ -1,5 +1,10 @@
 package com.stolz.connect.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -64,7 +69,13 @@ fun NavGraph(
             )
         }
         
-        composable(Screen.Inbox.route) {
+        composable(
+            Screen.Inbox.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) }
+        ) {
             InboxScreen(
                 onAddClick = {
                     navController.navigate(Screen.AddEdit.createRoute(null))
@@ -76,7 +87,13 @@ fun NavGraph(
             )
         }
         
-        composable(Screen.All.route) {
+        composable(
+            Screen.All.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) }
+        ) {
             AllScreen(
                 onAddClick = {
                     navController.navigate(Screen.AddEdit.createRoute(null))
@@ -88,7 +105,13 @@ fun NavGraph(
             )
         }
         
-        composable(Screen.Settings.route) {
+        composable(
+            Screen.Settings.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) }
+        ) {
             SettingsScreen(
                 onNavigateToAbout = {
                     navController.navigate(Screen.About.route)
@@ -97,7 +120,13 @@ fun NavGraph(
             )
         }
         
-        composable(Screen.About.route) {
+        composable(
+            Screen.About.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) }
+        ) {
             AboutScreen(
                 onNavigateBack = {
                     navController.popBackStack()
@@ -110,7 +139,11 @@ fun NavGraph(
             arguments = listOf(navArgument("connectionId") { 
                 type = NavType.LongType
                 defaultValue = -1L  // Use -1 to indicate new connection
-            })
+            }),
+            enterTransition = { slideInVertically(initialOffsetY = { it }, animationSpec = tween(300)) },
+            exitTransition = { slideOutVertically(targetOffsetY = { it }, animationSpec = tween(300)) },
+            popEnterTransition = { slideInVertically(initialOffsetY = { it }, animationSpec = tween(300)) },
+            popExitTransition = { slideOutVertically(targetOffsetY = { it }, animationSpec = tween(300)) }
         ) { backStackEntry ->
             val connectionIdArg = backStackEntry.arguments?.getLong("connectionId") ?: -1L
             val connectionId = if (connectionIdArg > 0) connectionIdArg else null
@@ -119,13 +152,21 @@ fun NavGraph(
                 onNavigateBack = {
                     navController.popBackStack()
                 },
-                onShowSnackbar = onShowSnackbar
+                onShowSnackbar = onShowSnackbar,
+                onViewExistingConnection = { existingId ->
+                    navController.popBackStack()
+                    navController.navigate(Screen.Details.createRoute(existingId))
+                }
             )
         }
         
         composable(
             route = Screen.Details.route,
-            arguments = listOf(navArgument("connectionId") { type = NavType.LongType })
+            arguments = listOf(navArgument("connectionId") { type = NavType.LongType }),
+            enterTransition = { slideInHorizontally(initialOffsetX = { it }, animationSpec = tween(300)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween(300)) },
+            popEnterTransition = { slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween(300)) },
+            popExitTransition = { slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween(300)) }
         ) { backStackEntry ->
             val connectionId = backStackEntry.arguments?.getLong("connectionId") ?: 0
             ConnectionDetailsScreen(

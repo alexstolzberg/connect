@@ -1,13 +1,16 @@
 package com.stolz.connect.ui.settings
 
 import app.cash.turbine.test
+import com.stolz.connect.data.preferences.NotificationPreferences
 import com.stolz.connect.data.preferences.ThemeMode
 import com.stolz.connect.data.preferences.ThemePreferences
+import com.stolz.connect.data.repository.ConnectionRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
@@ -23,17 +26,23 @@ import org.robolectric.annotation.Config
 class SettingsViewModelTest {
 
     private lateinit var themePreferences: ThemePreferences
+    private lateinit var notificationPreferences: NotificationPreferences
+    private lateinit var connectionRepository: ConnectionRepository
     private lateinit var viewModel: SettingsViewModel
 
     @Before
     fun setup() {
         themePreferences = mockk()
+        notificationPreferences = mockk()
+        every { notificationPreferences.getNotificationsEnabledFlow() } returns flowOf(true)
+        every { notificationPreferences.areNotificationsEnabled() } returns true
+        connectionRepository = mockk()
     }
 
     @Test
     fun `initial state loads theme mode from preferences`() = runTest {
         every { themePreferences.getThemeMode() } returns ThemeMode.DARK
-        viewModel = SettingsViewModel(themePreferences)
+        viewModel = SettingsViewModel(themePreferences, notificationPreferences, connectionRepository)
 
         advanceUntilIdle()
 
@@ -46,7 +55,7 @@ class SettingsViewModelTest {
     fun `setThemeMode updates preferences and state`() = runTest {
         every { themePreferences.getThemeMode() } returns ThemeMode.SYSTEM
         coEvery { themePreferences.setThemeMode(ThemeMode.LIGHT) } returns Unit
-        viewModel = SettingsViewModel(themePreferences)
+        viewModel = SettingsViewModel(themePreferences, notificationPreferences, connectionRepository)
 
         advanceUntilIdle()
 
@@ -64,7 +73,7 @@ class SettingsViewModelTest {
     fun `setThemeMode handles all theme modes`() = runTest {
         every { themePreferences.getThemeMode() } returns ThemeMode.SYSTEM
         coEvery { themePreferences.setThemeMode(any()) } returns Unit
-        viewModel = SettingsViewModel(themePreferences)
+        viewModel = SettingsViewModel(themePreferences, notificationPreferences, connectionRepository)
 
         advanceUntilIdle()
 

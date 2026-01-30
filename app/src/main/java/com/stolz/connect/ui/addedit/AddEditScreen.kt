@@ -65,10 +65,12 @@ fun AddEditScreen(
     connectionId: Long?,
     onNavigateBack: () -> Unit,
     onShowSnackbar: (String) -> Unit = {},
+    onViewExistingConnection: (Long) -> Unit = {},
     viewModel: AddEditViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val saveResult by viewModel.saveResult.collectAsState()
+    val duplicateCandidates by viewModel.duplicateCandidates.collectAsState()
     val context = LocalContext.current
     
     var shouldLaunchContactPicker by remember { mutableStateOf(false) }
@@ -191,7 +193,65 @@ fun AddEditScreen(
             onNavigateBack()
         }
     }
-    
+
+    duplicateCandidates?.let { duplicates ->
+        if (duplicates.isNotEmpty()) {
+            val existing = duplicates.first()
+            val isEdit = connectionId != null
+            val nameNorm = uiState.contactName.trim().lowercase().takeIf { it.isNotBlank() }
+            val phoneNorm = uiState.contactPhoneNumber?.replace(Regex("[^\\d]"), "")?.takeIf { it.isNotBlank() }
+            val emailNorm = uiState.contactEmail?.trim()?.lowercase()?.takeIf { it.isNotBlank() }
+            val nameMatches = nameNorm != null && existing.contactName.trim().lowercase() == nameNorm
+            val phoneMatches = phoneNorm != null && existing.contactPhoneNumber?.replace(Regex("[^\\d]"), "") == phoneNorm
+            val emailMatches = emailNorm != null && existing.contactEmail?.trim()?.lowercase() == emailNorm
+            val matchingFields = buildList {
+                if (nameMatches) add("Name")
+                if (phoneMatches) add("Phone")
+                if (emailMatches) add("Email")
+            }
+            AlertDialog(
+                onDismissRequest = { viewModel.clearDuplicateCandidates() },
+                title = { Text(if (isEdit) "Possible duplicate" else "Possible duplicate") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            if (isEdit) {
+                                "Another connection has the same name, phone, or email (e.g. \"${existing.contactName}\"). " +
+                                    "Save anyway or view that connection?"
+                            } else {
+                                "You already have a connection with the same name, phone, or email (e.g. \"${existing.contactName}\"). " +
+                                    "Do you want to add a new connection anyway, or view and edit the existing one?"
+                            }
+                        )
+                        if (matchingFields.isNotEmpty()) {
+                            Text(
+                                "Matching fields: ${matchingFields.joinToString(", ")}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                },
+                confirmButton = {
+                    TextButton(onClick = {
+                        viewModel.clearDuplicateCandidates()
+                        if (isEdit) viewModel.updateConnectionIgnoringDuplicates() else viewModel.saveConnectionIgnoringDuplicates()
+                    }) {
+                        Text(if (isEdit) "Save anyway" else "Add anyway", color = MaterialTheme.colorScheme.primary)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = {
+                        viewModel.clearDuplicateCandidates()
+                        onViewExistingConnection(existing.id)
+                    }) {
+                        Text("View existing", color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            )
+        }
+    }
+
     // Check if form is valid (name required, and either phone or email required)
     // Also validate that preferred method matches available data
     val hasPhone = !uiState.contactPhoneNumber.isNullOrBlank()
@@ -232,6 +292,7 @@ fun AddEditScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .imePadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Dimensions.medium),
             verticalArrangement = Arrangement.spacedBy(Dimensions.medium)

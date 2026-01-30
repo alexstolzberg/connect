@@ -44,6 +44,7 @@ class ConnectionRepositoryTest {
 
         mockkObject(NotificationManager)
         every { NotificationManager.scheduleNotification(any(), any()) } returns Unit
+        every { NotificationManager.scheduleNotification(any(), any(), any()) } returns Unit
         every { NotificationManager.cancelNotification(any(), any()) } returns Unit
 
         repository = ConnectionRepository(dao, notificationPreferences, context)

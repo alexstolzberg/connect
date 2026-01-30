@@ -5,7 +5,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -29,6 +28,7 @@ import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.domain.model.ScheduledConnection
 import com.stolz.connect.ui.theme.ConnectionColors
 import com.stolz.connect.ui.theme.Dimensions
+import com.stolz.connect.ui.theme.isConnectDarkTheme
 import com.stolz.connect.ui.theme.AvatarColors
 import com.stolz.connect.util.ContactColorCategory
 import com.stolz.connect.util.NameUtils
@@ -157,7 +157,7 @@ fun ConnectionItem(
     )
     val colorCategory = if (isSnoozed) ContactColorCategory.GREEN else baseColorCategory
     
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = isConnectDarkTheme()
     val colors = remember(colorCategory, isDarkTheme) {
         val indicatorColor = when (colorCategory) {
             ContactColorCategory.GREEN -> ConnectionColors.GreenIndicator
@@ -192,7 +192,8 @@ fun ConnectionItem(
             .offset { IntOffset(animationState.itemOffsetX.toInt(), 0) }
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = colors.backgroundColor
+            containerColor = colors.backgroundColor,
+            contentColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurface
         ),
         border = BorderStroke(
             width = Dimensions.xxxsmall,
@@ -240,26 +241,32 @@ fun ConnectionItem(
                     .align(Alignment.TopEnd)
                     .padding(Dimensions.xsmall)
             ) {
-                // Snooze button
+                // Snooze button (black in dark mode to match card text on light surfaces)
                 if (onSnoozeClick != null) {
                     IconButton(
                         onClick = onSnoozeClick,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(48.dp),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            contentColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.primary
+                        )
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Snooze,
                             contentDescription = "Snooze",
-                            tint = MaterialTheme.colorScheme.primary
+                            tint = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.primary
                         )
                     }
                 }
                 
-                // Checkmark button
+                // Checkmark button (black/gray in dark mode on light card, then green when marked)
                 IconButton(
                     onClick = animationState.handleMarkComplete,
                     modifier = Modifier
                         .size(48.dp)
-                        .scale(animationState.checkmarkScaleAnim)
+                        .scale(animationState.checkmarkScaleAnim),
+                    colors = IconButtonDefaults.iconButtonColors(
+                        contentColor = if (isDarkTheme && animationState.checkmarkState != 2) ConnectionColors.OnCardDark else animationState.checkmarkColor
+                    )
                 ) {
                     Icon(
                         imageVector = if (animationState.checkmarkState == 2) {
@@ -268,7 +275,7 @@ fun ConnectionItem(
                             Icons.Outlined.CheckCircle
                         },
                         contentDescription = "Mark as Contacted",
-                        tint = animationState.checkmarkColor
+                        tint = if (animationState.checkmarkState == 2) animationState.checkmarkColor else (if (isDarkTheme) ConnectionColors.OnCardDark else Color.Gray)
                     )
                 }
             }
@@ -326,18 +333,9 @@ private fun ConnectionItemContent(
     refreshTrigger: Int,
     modifier: Modifier = Modifier
 ) {
-    val isDarkTheme = isSystemInDarkTheme()
-    // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
-    // In light mode: all backgrounds are light (use dark text)
-    val textColor = if (isDarkTheme) {
-        when (colorCategory) {
-            ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
-        }
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    
+    val isDarkTheme = isConnectDarkTheme()
+    val textColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurface
+
     Column(modifier = modifier.padding(start = Dimensions.small)) {
         Text(
             text = connection.contactName,
@@ -462,36 +460,10 @@ private fun ConnectionItemMetadata(
     colorCategory: ContactColorCategory,
     isSnoozed: Boolean
 ) {
-    val isDarkTheme = isSystemInDarkTheme()
-    // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
-    // In light mode: all backgrounds are light (use dark text)
-    val textColor = if (isDarkTheme) {
-        when (colorCategory) {
-            ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
-        }
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    
-    val valueColor = if (isDarkTheme) {
-        when (colorCategory) {
-            ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
-        }
-    } else {
-        MaterialTheme.colorScheme.onSurface
-    }
-    
-    // Error text color for "Never contacted" - ensure good contrast
-    val errorTextColor = if (isDarkTheme) {
-        when (colorCategory) {
-            ContactColorCategory.GREEN -> Color(0xFFFF6B6B) // Light red on dark green background
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFFD32F2F) // Darker red on light backgrounds
-        }
-    } else {
-        MaterialTheme.colorScheme.error
-    }
+    val isDarkTheme = isConnectDarkTheme()
+    val textColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurfaceVariant
+    val valueColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurface
+    val errorTextColor = if (isDarkTheme) Color(0xFFB71C1C) else MaterialTheme.colorScheme.error
     
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -508,17 +480,18 @@ private fun ConnectionItemMetadata(
             fontWeight = FontWeight.Medium,
             color = valueColor
         )
-        // Show snooze indicator if item was snoozed
+        // Show snooze indicator if item was snoozed (use text color for readability on colored card)
         if (isSnoozed) {
             Icon(
                 imageVector = Icons.Outlined.Snooze,
                 contentDescription = "Snoozed",
-                tint = MaterialTheme.colorScheme.primary,
+                tint = textColor,
                 modifier = Modifier.size(Dimensions.medium)
             )
         }
     }
     
+    val relativeTimeColor = indicatorColor
     if (connection.lastContactedDate != null) {
         Spacer(modifier = Modifier.height(3.dp))
         Row(
@@ -534,7 +507,7 @@ private fun ConnectionItemMetadata(
                 text = relativeTimeText ?: "",
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = indicatorColor
+                color = relativeTimeColor
             )
         }
     } else {

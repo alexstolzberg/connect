@@ -1,6 +1,5 @@
 package com.stolz.connect.ui.home
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
@@ -14,7 +13,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.stolz.connect.ui.theme.ConnectionColors
 import com.stolz.connect.ui.theme.Dimensions
+import com.stolz.connect.ui.theme.isConnectDarkTheme
 import com.stolz.connect.util.ContactColorCategory
 
 data class DataRowAction(
@@ -31,31 +32,9 @@ fun DataRow(
     colorCategory: ContactColorCategory? = null,
     modifier: Modifier = Modifier
 ) {
-    val isDarkTheme = isSystemInDarkTheme()
-    // In dark mode: green has dark background (use white text), yellow/red have light backgrounds (use dark text)
-    // In light mode: all backgrounds are light (use dark text)
-    val labelColor = if (isDarkTheme && colorCategory != null) {
-        when (colorCategory) {
-            ContactColorCategory.GREEN -> Color.White.copy(alpha = 0.9f) // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000).copy(alpha = 0.9f) // Pure black on light backgrounds for maximum contrast
-        }
-    } else if (isDarkTheme) {
-        // Default: assume dark background in dark mode
-        Color.White.copy(alpha = 0.9f)
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
-    val valueColor = if (isDarkTheme && colorCategory != null) {
-        when (colorCategory) {
-            ContactColorCategory.GREEN -> Color.White // Dark green background needs white text
-            ContactColorCategory.YELLOW, ContactColorCategory.RED -> Color(0xFF000000) // Pure black on light backgrounds for maximum contrast
-        }
-    } else if (isDarkTheme) {
-        // Default: assume dark background in dark mode
-        Color.White
-    } else {
-        MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val isDarkTheme = isConnectDarkTheme()
+    val labelColor = if (isDarkTheme) ConnectionColors.OnCardDark.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
+    val valueColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurfaceVariant
     
     Column(modifier = modifier) {
         Text(
@@ -88,7 +67,7 @@ fun DataRow(
                             Icon(
                                 imageVector = action.icon,
                                 contentDescription = action.contentDescription,
-                                tint = MaterialTheme.colorScheme.primary,
+                                tint = if (colorCategory != null) valueColor else MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(20.dp)
                             )
                         }

@@ -52,25 +52,28 @@ object AvatarColors {
     }
 }
 
-// Connection status colors
+// Connection status colors — all opaque (0xFF) so no grey from transparency.
 object ConnectionColors {
-    // Indicator colors (same for light and dark)
+    // Status strip / indicator (same in light and dark)
     val GreenIndicator = Color(0xFF4CAF50)
     val YellowIndicator = Color(0xFFFFC107)
     val RedIndicator = Color(0xFFF44336)
-    
-    // Background colors - Light theme
-    val GreenBackgroundLight = Color(0xFFE8F5E9) // Light green
-    val YellowBackgroundLight = Color(0xFFFFF8E1) // Muted pastel yellow
-    val RedBackgroundLight = Color(0xFFFFEBEE) // Light red
-    
-    // Background colors - Dark theme
-    val GreenBackgroundDark = Color(0xFF0C3301) // Very dark green
-    val YellowBackgroundDark = Color(0xFFD4D272) // Light yellow background
-    val RedBackgroundDark = Color(0xFFD18A82) // Light red background
-    
-    // Outline colors for dark theme (lighter than background)
-    val GreenOutlineDark = Color(0xFF4CAF50) // Lighter green outline
-    val YellowOutlineDark = Color(0xFFD4D272) // Light yellow outline
-    val RedOutlineDark = Color(0xFFD18A82) // Light red outline
+
+    // Light theme: pastel card backgrounds
+    val GreenBackgroundLight = Color(0xFFE8F5E9)
+    val YellowBackgroundLight = Color(0xFFFFF8E1)
+    val RedBackgroundLight = Color(0xFFFFEBEE)
+
+    // Dark theme: solid light-tinted card backgrounds (black text on these)
+    val GreenBackgroundDark = Color(0xFFB8D9BA)
+    val YellowBackgroundDark = Color(0xFFEDE9A8)
+    val RedBackgroundDark = Color(0xFFF0B8B0)
+
+    // Dark theme card outline
+    val GreenOutlineDark = Color(0xFF66BB6A)
+    val YellowOutlineDark = Color(0xFFD4D272)
+    val RedOutlineDark = Color(0xFFD18A82)
+
+    /** Text/icon color on status cards in dark mode (black for contrast). */
+    val OnCardDark = Color(0xFF000000)
 }

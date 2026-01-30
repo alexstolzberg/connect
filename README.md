@@ -67,7 +67,16 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.11 (Latest)
+### Version 1.3.12 (Latest)
+- 🎬 Slide transitions: Add/Edit screen slides up from bottom (modal-style) and down on dismiss/save; other screens use horizontal slide
+- 📍 Snackbars pinned to bottom (above bottom nav when visible)
+- ⌨️ Keyboard: Scroll gets extra bottom padding when keyboard is up (imePadding + adjustResize)
+- 📋 Duplicate dialog shows which fields matched (Name, Phone, Email)
+- 🌙 Dark mode: Single `isConnectDarkTheme()` from theme (no luminance/brightness); card text/icons use `ConnectionColors.OnCardDark`; snooze icon explicit tint
+- 🎨 Connection card colors: Opaque dark-theme backgrounds; `OnCardDark` for all card content in dark mode
+- 🧪 Tests updated: SettingsViewModelTest mocks notificationPreferences/connectionRepository; ConnectionRepositoryTest mocks 3-arg scheduleNotification
+
+### Version 1.3.11
 - 🔔 Push notifications: Right time (uses reminder time of day), tap opens contact details, message "This is a reminder to connect with [name]"
 - 🔔 Notification title "It's time to connect!" and bell icon
 - 🔔 Notifications off by default; first-launch prompt to enable (with permission request on Android 13+)

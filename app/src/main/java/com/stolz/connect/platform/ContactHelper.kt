@@ -84,25 +84,32 @@ object ContactHelper {
         }
     }
     
+    /**
+     * Opens the user's email app with the recipient pre-filled (mailto: link).
+     * Does not show a share sheet; starts the email app directly when one is available.
+     */
     fun sendEmail(context: Context, email: String) {
         val intent = Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:$email")
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         try {
-            if (intent.resolveActivity(context.packageManager) != null) {
-                context.startActivity(intent)
-            } else {
-                // Fallback to ACTION_SEND
-                val sendIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = "message/rfc822"
-                    putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
-                }
-                if (sendIntent.resolveActivity(context.packageManager) != null) {
-                    context.startActivity(Intent.createChooser(sendIntent, "Send email"))
-                }
-            }
+            val activity = context as? android.app.Activity
+            activity?.startActivity(intent) ?: context.startActivity(intent)
+        } catch (e: android.content.ActivityNotFoundException) {
+            android.util.Log.e("ContactHelper", "No app handles mailto", e)
+            android.widget.Toast.makeText(
+                context,
+                "No email app found",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
         } catch (e: Exception) {
             android.util.Log.e("ContactHelper", "Failed to open email app", e)
+            android.widget.Toast.makeText(
+                context,
+                "Unable to open email app",
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
         }
     }
     
@@ -232,12 +239,13 @@ object ContactHelper {
                 data = finalUri
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK
             }
-            
+
             val resolveInfo = intent.resolveActivity(context.packageManager)
             android.util.Log.d("ContactHelper", "Resolve info: $resolveInfo")
-            
+
             if (resolveInfo != null) {
-                context.startActivity(intent)
+                (context as? android.app.Activity)?.startActivity(intent)
+                    ?: context.startActivity(intent)
                 android.util.Log.d("ContactHelper", "Successfully started contact view activity")
             } else {
                 android.util.Log.e("ContactHelper", "No activity found to handle contact view")

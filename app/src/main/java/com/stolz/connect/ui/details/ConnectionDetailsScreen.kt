@@ -32,6 +32,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
 import com.stolz.connect.platform.ContactHelper
+import com.stolz.connect.ui.theme.ConnectionColors
+import com.stolz.connect.ui.theme.isConnectDarkTheme
 import com.stolz.connect.util.ContactColorCategory
 import com.stolz.connect.util.StringUtils
 import com.stolz.connect.util.TimeFormatter
@@ -168,17 +170,18 @@ fun ConnectionDetailsScreen(
                 )
                 val colorCategory = if (isSnoozed) ContactColorCategory.GREEN else baseColorCategory
                 
+                val isDarkTheme = isConnectDarkTheme()
                 val indicatorColor = when (colorCategory) {
-                    ContactColorCategory.GREEN -> Color(0xFF4CAF50)
-                    ContactColorCategory.YELLOW -> Color(0xFFFFC107)
-                    ContactColorCategory.RED -> Color(0xFFF44336)
+                    ContactColorCategory.GREEN -> ConnectionColors.GreenIndicator
+                    ContactColorCategory.YELLOW -> ConnectionColors.YellowIndicator
+                    ContactColorCategory.RED -> ConnectionColors.RedIndicator
                 }
-                
                 val backgroundColor = when (colorCategory) {
-                    ContactColorCategory.GREEN -> Color(0xFFE8F5E9) // Light green
-                    ContactColorCategory.YELLOW -> Color(0xFFFFF9C4) // Light yellow
-                    ContactColorCategory.RED -> Color(0xFFFFEBEE) // Light red
+                    ContactColorCategory.GREEN -> if (isDarkTheme) ConnectionColors.GreenBackgroundDark else ConnectionColors.GreenBackgroundLight
+                    ContactColorCategory.YELLOW -> if (isDarkTheme) ConnectionColors.YellowBackgroundDark else ConnectionColors.YellowBackgroundLight
+                    ContactColorCategory.RED -> if (isDarkTheme) ConnectionColors.RedBackgroundDark else ConnectionColors.RedBackgroundLight
                 }
+                val cardContentColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurface
                 
                 // Use refreshTrigger to force recomposition and recalculate relative time
                 val relativeTimeText = remember(refreshTrigger, connection.lastContactedDate) {
@@ -199,7 +202,8 @@ fun ConnectionDetailsScreen(
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(
-                            containerColor = backgroundColor
+                            containerColor = backgroundColor,
+                            contentColor = cardContentColor
                         ),
                         border = androidx.compose.foundation.BorderStroke(
                             width = 3.dp,
@@ -219,34 +223,24 @@ fun ConnectionDetailsScreen(
                                     text = connection.contactName,
                                     style = MaterialTheme.typography.headlineMedium,
                                     fontWeight = FontWeight.Bold,
+                                    color = cardContentColor,
                                     modifier = Modifier.weight(1f)
                                 )
                                 // Show connection type badge
                                 if (connection.contactId != null) {
-                                    val canOpenContact = remember(connection.contactId) {
-                                        ContactHelper.canOpenContactInPhone(context, connection.contactId)
-                                    }
                                     Surface(
-                                        color = if (canOpenContact) {
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        } else {
-                                            MaterialTheme.colorScheme.surfaceVariant
-                                        },
+                                        color = MaterialTheme.colorScheme.primaryContainer,
                                         shape = MaterialTheme.shapes.small,
-                                        modifier = if (canOpenContact) {
-                                            Modifier.clickable {
-                                                try {
-                                                    ContactHelper.openContactInPhone(context, connection.contactId)
-                                                } catch (e: Exception) {
-                                                    android.widget.Toast.makeText(
-                                                        context,
-                                                        "Unable to open contact",
-                                                        android.widget.Toast.LENGTH_SHORT
-                                                    ).show()
-                                                }
+                                        modifier = Modifier.clickable {
+                                            try {
+                                                ContactHelper.openContactInPhone(context, connection.contactId!!)
+                                            } catch (e: Exception) {
+                                                android.widget.Toast.makeText(
+                                                    context,
+                                                    "Unable to open contact",
+                                                    android.widget.Toast.LENGTH_SHORT
+                                                ).show()
                                             }
-                                        } else {
-                                            Modifier
                                         }
                                     ) {
                                         Row(
@@ -258,20 +252,12 @@ fun ConnectionDetailsScreen(
                                                 Icons.Default.Person,
                                                 contentDescription = null,
                                                 modifier = Modifier.size(Dimensions.medium),
-                                                tint = if (canOpenContact) {
-                                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                                } else {
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                                }
+                                                tint = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
                                             Text(
                                                 text = "View Contact",
                                                 style = MaterialTheme.typography.labelSmall,
-                                                color = if (canOpenContact) {
-                                                    MaterialTheme.colorScheme.onPrimaryContainer
-                                                } else {
-                                                    MaterialTheme.colorScheme.onSurfaceVariant
-                                                }
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
                                         }
                                     }
@@ -293,26 +279,26 @@ fun ConnectionDetailsScreen(
                                 Text(
                                     text = "Phone",
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = cardContentColor,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
                                     text = PhoneNumberFormatter.format(connection.contactPhoneNumber),
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = cardContentColor
                                 )
                             }
                             if (connection.contactEmail != null) {
                                 Text(
                                     text = "Email",
                                     style = MaterialTheme.typography.labelMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = cardContentColor,
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
                                     text = connection.contactEmail,
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = cardContentColor
                                 )
                             }
                             
@@ -320,7 +306,8 @@ fun ConnectionDetailsScreen(
                             
                             InfoRow(
                                 "Frequency", 
-                                StringUtils.pluralize(connection.reminderFrequencyDays, "day", "days")
+                                StringUtils.pluralize(connection.reminderFrequencyDays, "day", "days"),
+                                color = cardContentColor
                             )
                             InfoRow(
                                 "Method", 
@@ -329,7 +316,8 @@ fun ConnectionDetailsScreen(
                                     com.stolz.connect.domain.model.ConnectionMethod.MESSAGE -> "Message"
                                     com.stolz.connect.domain.model.ConnectionMethod.EMAIL -> "Email"
                                     com.stolz.connect.domain.model.ConnectionMethod.BOTH -> "No Preference"
-                                }
+                                },
+                                color = cardContentColor
                             )
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -339,7 +327,7 @@ fun ConnectionDetailsScreen(
                                 Text(
                                     text = "Next Reminder",
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = cardContentColor
                                 )
                                 Row(
                                     horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall),
@@ -349,13 +337,13 @@ fun ConnectionDetailsScreen(
                                         text = dateFormat.format(connection.nextReminderDate),
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Medium,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = cardContentColor
                                     )
                                     if (isSnoozed) {
                                         Icon(
                                             imageVector = Icons.Outlined.Snooze,
                                             contentDescription = "Snoozed",
-                                            tint = MaterialTheme.colorScheme.primary,
+                                            tint = cardContentColor,
                                             modifier = Modifier.size(Dimensions.medium)
                                         )
                                     }
@@ -369,7 +357,7 @@ fun ConnectionDetailsScreen(
                                     Text(
                                         text = "Last Contacted",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        color = cardContentColor
                                     )
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
@@ -384,7 +372,7 @@ fun ConnectionDetailsScreen(
                                         Text(
                                             text = "(${dateFormat.format(connection.lastContactedDate)})",
                                             style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = cardContentColor
                                         )
                                     }
                                 }
@@ -399,7 +387,8 @@ fun ConnectionDetailsScreen(
                                 Divider()
                                 InfoRow(
                                     "Birthday",
-                                    dateFormat.format(connection.birthday)
+                                    dateFormat.format(connection.birthday),
+                                    color = cardContentColor
                                 )
                             }
                             if (connection.notes != null && connection.notes.isNotBlank()) {
@@ -523,6 +512,8 @@ fun ConnectionDetailsScreen(
 
 @Composable
 fun InfoRow(label: String, value: String, color: Color? = null) {
+    val labelColor = color ?: MaterialTheme.colorScheme.onSurfaceVariant
+    val valueColor = color ?: MaterialTheme.colorScheme.onSurface
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween
@@ -530,13 +521,13 @@ fun InfoRow(label: String, value: String, color: Color? = null) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = labelColor
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium,
-            color = color ?: MaterialTheme.colorScheme.onSurface
+            color = valueColor
         )
     }
 }

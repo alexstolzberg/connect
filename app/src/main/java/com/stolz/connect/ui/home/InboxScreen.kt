@@ -19,7 +19,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,6 +50,8 @@ fun InboxScreen(
     val searchQuery by viewModel.searchQuery.collectAsState()
     val context = LocalContext.current
     var searchActive by remember { mutableStateOf(false) }
+    val searchFocusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     var showSnoozeSheet by remember { mutableStateOf<ScheduledConnection?>(null) }
     val lifecycleOwner = LocalLifecycleOwner.current
     
@@ -100,12 +105,18 @@ fun InboxScreen(
             TopAppBar(
                 title = { 
                     if (searchActive) {
+                        LaunchedEffect(Unit) {
+                            searchFocusRequester.requestFocus()
+                            keyboardController?.show()
+                        }
                         TextField(
                             value = searchQuery,
                             onValueChange = { viewModel.setSearchQuery(it) },
                             placeholder = { Text("Search...") },
                             singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .focusRequester(searchFocusRequester),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = Color.Transparent,
                                 unfocusedContainerColor = Color.Transparent

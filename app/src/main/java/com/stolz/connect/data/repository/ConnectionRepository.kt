@@ -38,14 +38,37 @@ class ConnectionRepository @Inject constructor(
     suspend fun getConnectionById(id: Long): ScheduledConnection? {
         return connectionDao.getConnectionById(id)?.toDomain()
     }
-    
+
+    /**
+     * Returns connections that match the given name, phone, or email (for duplicate check).
+     * @param excludeId If set (e.g. when editing), connections with this id are excluded from results.
+     */
+    suspend fun findPotentialDuplicates(
+        name: String?,
+        phone: String?,
+        email: String?,
+        excludeId: Long? = null
+    ): List<ScheduledConnection> {
+        val all = connectionDao.getAllActiveConnections().first().map { it.toDomain() }
+        val nameNorm = name?.trim()?.lowercase()?.takeIf { it.isNotBlank() }
+        val phoneNorm = phone?.replace(Regex("[^\\d]"), "")?.takeIf { it.isNotBlank() }
+        val emailNorm = email?.trim()?.lowercase()?.takeIf { it.isNotBlank() }
+        if (nameNorm == null && phoneNorm == null && emailNorm == null) return emptyList()
+        return all.filter { existing ->
+            (excludeId != null && existing.id == excludeId) == false &&
+            ((nameNorm != null && existing.contactName.trim().lowercase() == nameNorm) ||
+             (phoneNorm != null && existing.contactPhoneNumber?.replace(Regex("[^\\d]"), "")?.let { it == phoneNorm } == true) ||
+             (emailNorm != null && existing.contactEmail?.trim()?.lowercase() == emailNorm))
+        }
+    }
+
     suspend fun insertConnection(connection: ScheduledConnection): Long {
         val entity = connection.toEntity()
         val insertedId = connectionDao.insertConnection(entity)
         
         val connectionWithId = connection.copy(id = insertedId)
         if (notificationPreferences.areNotificationsEnabled()) {
-            NotificationManager.scheduleNotification(context, connectionWithId)
+            NotificationManager.scheduleNotification(context, connectionWithId, showIfDueNow = false)
         }
         return insertedId
     }

@@ -37,18 +37,23 @@ object NotificationManager {
         return cal.timeInMillis
     }
     
-    fun scheduleNotification(context: Context, connection: ScheduledConnection) {
+    /**
+     * Schedules a reminder notification for the connection.
+     * @param showIfDueNow If true and the reminder time is already past, shows a notification immediately.
+     *                     Set to false when creating a new connection so the user doesn't get a notification right after adding.
+     */
+    fun scheduleNotification(context: Context, connection: ScheduledConnection, showIfDueNow: Boolean = true) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        
-        // Cancel any existing notification for this connection
+
         cancelNotification(context, connection.id)
-        
+
         val alarmTimeMillis = alarmTimeFor(connection)
         val now = System.currentTimeMillis()
-        
-        // If the alarm time is in the past or right now, show notification immediately
+
         if (alarmTimeMillis <= now) {
-            showNotification(context, connection)
+            if (showIfDueNow) {
+                showNotification(context, connection)
+            }
             return
         }
         
