@@ -67,7 +67,12 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.13 (Latest)
+### Version 1.3.14 (Latest)
+- 🏷️ Connection details: Non-clickable pill shows "From contacts" or "Manually added" (View Contact / Search / Add actions removed)
+- 🧹 Removed unused ContactHelper code: openContactInPhone, openContactsWithSearch, addContactToPhone, canOpenContactInPhone
+- 🧹 Cleanup: Duplicate imports removed in ConnectionDetailsScreen and AddEditScreen
+
+### Version 1.3.13
 - ⏰ Default reminder time: Settings → Default reminder time (default 10:00 AM); used when a connection has no reminder time
 - ⏰ Reminder time on Add/Edit: Per-connection reminder time with time picker; new connections start with default
 - 🕐 Clock icon for Default reminder time in Settings

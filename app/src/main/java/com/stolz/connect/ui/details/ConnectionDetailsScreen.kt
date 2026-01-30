@@ -14,8 +14,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -226,53 +223,17 @@ fun ConnectionDetailsScreen(
                                     color = cardContentColor,
                                     modifier = Modifier.weight(1f)
                                 )
-                                // Show connection type badge
-                                if (connection.contactId != null) {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.primaryContainer,
-                                        shape = MaterialTheme.shapes.small,
-                                        modifier = Modifier.clickable {
-                                            try {
-                                                ContactHelper.openContactInPhone(context, connection.contactId!!)
-                                            } catch (e: Exception) {
-                                                android.widget.Toast.makeText(
-                                                    context,
-                                                    "Unable to open contact",
-                                                    android.widget.Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-                                        }
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(horizontal = Dimensions.xsmall, vertical = Dimensions.xxsmall),
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
-                                        ) {
-                                            Icon(
-                                                Icons.Default.Person,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(Dimensions.medium),
-                                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                                            )
-                                            Text(
-                                                text = "View Contact",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                                            )
-                                        }
-                                    }
-                                } else {
-                                    Surface(
-                                        color = MaterialTheme.colorScheme.surfaceVariant,
-                                        shape = MaterialTheme.shapes.small
-                                    ) {
-                                        Text(
-                                            text = "Manual Input",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                            modifier = Modifier.padding(horizontal = Dimensions.xsmall, vertical = Dimensions.xxsmall)
-                                        )
-                                    }
+                                // Non-clickable pill: source of the connection
+                                Surface(
+                                    color = MaterialTheme.colorScheme.surfaceVariant,
+                                    shape = MaterialTheme.shapes.small
+                                ) {
+                                    Text(
+                                        text = if (connection.contactId != null) "From contacts" else "Manually added",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(horizontal = Dimensions.xsmall, vertical = Dimensions.xxsmall)
+                                    )
                                 }
                             }
                             if (connection.contactPhoneNumber != null) {
