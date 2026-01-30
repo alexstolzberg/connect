@@ -3,6 +3,7 @@ package com.stolz.connect.ui.addedit
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.stolz.connect.data.preferences.NotificationPreferences
 import com.stolz.connect.data.repository.ConnectionRepository
 import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.domain.model.ScheduledConnection
@@ -19,6 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class AddEditViewModel @Inject constructor(
     private val connectionRepository: ConnectionRepository,
+    private val notificationPreferences: NotificationPreferences,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     
@@ -53,13 +55,17 @@ class AddEditViewModel @Inject constructor(
         if (connectionId != null && connectionId > 0) {
             loadConnection(connectionId)
         } else {
-            // Set default next reminder date to today (user can change it)
+            // Set default next reminder date to today and default reminder time from settings
             val calendar = Calendar.getInstance()
             _uiState.value = _uiState.value.copy(
-                nextReminderDate = calendar.time
+                nextReminderDate = calendar.time,
+                reminderTime = notificationPreferences.getDefaultReminderTime()
             )
         }
     }
+
+    /** Default reminder time from settings (e.g. "10:00"). Used when connection has no reminder time set. */
+    fun getDefaultReminderTime(): String = notificationPreferences.getDefaultReminderTime()
     
     private fun loadConnection(id: Long) {
         viewModelScope.launch {

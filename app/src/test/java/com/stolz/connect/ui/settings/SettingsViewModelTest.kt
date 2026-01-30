@@ -36,6 +36,7 @@ class SettingsViewModelTest {
         notificationPreferences = mockk()
         every { notificationPreferences.getNotificationsEnabledFlow() } returns flowOf(true)
         every { notificationPreferences.areNotificationsEnabled() } returns true
+        every { notificationPreferences.getDefaultReminderTime() } returns "10:00"
         connectionRepository = mockk()
     }
 

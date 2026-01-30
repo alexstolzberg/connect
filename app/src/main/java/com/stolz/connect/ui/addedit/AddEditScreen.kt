@@ -1,6 +1,7 @@
 package com.stolz.connect.ui.addedit
 
 import android.Manifest
+import android.app.TimePickerDialog
 import android.content.ContentUris
 import android.provider.ContactsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -698,6 +699,38 @@ fun AddEditScreen(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
+
+            // Reminder time (time of day for notification)
+            val displayReminderTime = uiState.reminderTime?.takeIf { it.isNotBlank() } ?: viewModel.getDefaultReminderTime()
+            ListItem(
+                headlineContent = { Text("Reminder time") },
+                supportingContent = {
+                    Text(
+                        "Time of day for the notification (e.g. 10:00 AM)",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                },
+                trailingContent = {
+                    Text(
+                        text = formatReminderTimeForDisplay(displayReminderTime),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        val (hour, minute) = parseReminderTime(displayReminderTime)
+                        TimePickerDialog(
+                            context,
+                            { _, h, m ->
+                                viewModel.updateReminderTime("%02d:%02d".format(h, m))
+                            },
+                            hour,
+                            minute,
+                            false
+                        ).show()
+                    }
+            )
             
             // Preferred method - always show all pills
             val phoneNumber = uiState.contactPhoneNumber
@@ -870,4 +903,22 @@ fun AddEditScreen(
     }
 }
 
+/** Parses "HH:mm" to (hour24, minute). Defaults to 10:00 if invalid. */
+private fun parseReminderTime(time: String): Pair<Int, Int> {
+    val parts = time.trim().split(":")
+    val hour = parts.getOrNull(0)?.toIntOrNull()?.coerceIn(0, 23) ?: 10
+    val minute = parts.getOrNull(1)?.toIntOrNull()?.coerceIn(0, 59) ?: 0
+    return hour to minute
+}
 
+/** Formats "HH:mm" for display (e.g. "10:00 AM", "2:30 PM"). */
+private fun formatReminderTimeForDisplay(time: String): String {
+    val (hour24, minute) = parseReminderTime(time)
+    val (hour12, amPm) = when {
+        hour24 == 0 -> 12 to "AM"
+        hour24 < 12 -> hour24 to "AM"
+        hour24 == 12 -> 12 to "PM"
+        else -> (hour24 - 12) to "PM"
+    }
+    return "%d:%02d %s".format(hour12, minute, amPm)
+}

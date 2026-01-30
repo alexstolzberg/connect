@@ -1,6 +1,7 @@
 package com.stolz.connect.ui.settings
 
 import android.Manifest
+import android.app.TimePickerDialog
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,6 +36,7 @@ fun SettingsScreen(
 ) {
     val themeMode by viewModel.themeMode.collectAsState()
     val notificationsEnabled by viewModel.notificationsEnabled.collectAsState()
+    val defaultReminderTime by viewModel.defaultReminderTime.collectAsState()
     val context = LocalContext.current
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -108,6 +110,41 @@ fun SettingsScreen(
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
+                )
+                ListItem(
+                    headlineContent = { Text("Default reminder time") },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = null
+                        )
+                    },
+                    supportingContent = {
+                        Text(
+                            "Time of day for reminders when not set per connection (e.g. 10:00 AM)",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    },
+                    trailingContent = {
+                        Text(
+                            text = formatTimeForDisplay(defaultReminderTime),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            val (hour, minute) = parseTime(defaultReminderTime)
+                            TimePickerDialog(
+                                context,
+                                { _, h, m ->
+                                    viewModel.setDefaultReminderTime("%02d:%02d".format(h, m))
+                                },
+                                hour,
+                                minute,
+                                false
+                            ).show()
+                        }
                 )
             }
 
@@ -279,4 +316,24 @@ fun ThemeOption(
             )
         }
     }
+}
+
+/** Parses "HH:mm" to (hour24, minute). Defaults to 10:00 if invalid. */
+private fun parseTime(time: String): Pair<Int, Int> {
+    val parts = time.trim().split(":")
+    val hour = parts.getOrNull(0)?.toIntOrNull()?.coerceIn(0, 23) ?: 10
+    val minute = parts.getOrNull(1)?.toIntOrNull()?.coerceIn(0, 59) ?: 0
+    return hour to minute
+}
+
+/** Formats "HH:mm" for display (e.g. "10:00 AM", "2:30 PM"). */
+private fun formatTimeForDisplay(time: String): String {
+    val (hour24, minute) = parseTime(time)
+    val (hour12, amPm) = when {
+        hour24 == 0 -> 12 to "AM"
+        hour24 < 12 -> hour24 to "AM"
+        hour24 == 12 -> 12 to "PM"
+        else -> (hour24 - 12) to "PM"
+    }
+    return "%d:%02d %s".format(hour12, minute, amPm)
 }

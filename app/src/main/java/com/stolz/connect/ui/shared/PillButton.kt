@@ -57,9 +57,9 @@ fun PillButton(
         label = "textColor"
     )
     
-    // Animate border color
+    // Animate border color (grey when disabled)
     val borderColor by animateColorAsState(
-        targetValue = MaterialTheme.colorScheme.primary,
+        targetValue = if (enabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -96,7 +96,7 @@ fun PillButton(
             selectedLabelColor = textColor
         ),
         border = FilterChipDefaults.filterChipBorder(
-            enabled = true,
+            enabled = enabled,
             selected = isSelected,
             borderColor = borderColor,
             selectedBorderColor = borderColor,

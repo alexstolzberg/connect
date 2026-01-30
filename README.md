@@ -67,7 +67,15 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.12 (Latest)
+### Version 1.3.13 (Latest)
+- ⏰ Default reminder time: Settings → Default reminder time (default 10:00 AM); used when a connection has no reminder time
+- ⏰ Reminder time on Add/Edit: Per-connection reminder time with time picker; new connections start with default
+- 🕐 Clock icon for Default reminder time in Settings
+- 🧭 Tab switching: Fade transitions between Inbox/All/Settings (no horizontal swipe feel)
+- 🎨 Preferred method pills: Grey border when disabled (Call/Message without phone, Email without email)
+- 🧪 SettingsViewModelTest: Stub getDefaultReminderTime() for init
+
+### Version 1.3.12
 - 🎬 Slide transitions: Add/Edit screen slides up from bottom (modal-style) and down on dismiss/save; other screens use horizontal slide
 - 📍 Snackbars pinned to bottom (above bottom nav when visible)
 - ⌨️ Keyboard: Scroll gets extra bottom padding when keyboard is up (imePadding + adjustResize)

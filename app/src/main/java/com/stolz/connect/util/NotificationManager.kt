@@ -19,15 +19,15 @@ object NotificationManager {
     const val EXTRA_OPEN_CONNECTION_ID = "com.stolz.connect.OPEN_CONNECTION_ID"
     
     /**
-     * Computes the exact alarm time: the reminder date at the user's preferred time of day (reminderTime in HH:mm),
-     * or nextReminderDate as-is if no reminderTime is set.
+     * Computes the exact alarm time: the reminder date at the connection's reminderTime (HH:mm), or at defaultReminderTime
+     * when connection has no reminder time set, or nextReminderDate as-is if neither is set.
      */
-    private fun alarmTimeFor(connection: ScheduledConnection): Long {
+    private fun alarmTimeFor(connection: ScheduledConnection, defaultReminderTime: String?): Long {
         val cal = Calendar.getInstance().apply { time = connection.nextReminderDate }
-        val reminderTime = connection.reminderTime
-        if (!reminderTime.isNullOrBlank()) {
-            val parts = reminderTime.trim().split(":")
-            val hour = parts.getOrNull(0)?.toIntOrNull() ?: 9
+        val timeToUse = connection.reminderTime?.trim()?.takeIf { it.isNotBlank() } ?: defaultReminderTime?.trim()?.takeIf { it.isNotBlank() }
+        if (!timeToUse.isNullOrBlank()) {
+            val parts = timeToUse.split(":")
+            val hour = parts.getOrNull(0)?.toIntOrNull() ?: 10
             val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
             cal.set(Calendar.HOUR_OF_DAY, hour.coerceIn(0, 23))
             cal.set(Calendar.MINUTE, minute.coerceIn(0, 59))
@@ -36,18 +36,24 @@ object NotificationManager {
         }
         return cal.timeInMillis
     }
-    
+
     /**
      * Schedules a reminder notification for the connection.
+     * @param defaultReminderTime Default time of day (HH:mm) when connection has no reminder time; e.g. "10:00".
      * @param showIfDueNow If true and the reminder time is already past, shows a notification immediately.
      *                     Set to false when creating a new connection so the user doesn't get a notification right after adding.
      */
-    fun scheduleNotification(context: Context, connection: ScheduledConnection, showIfDueNow: Boolean = true) {
+    fun scheduleNotification(
+        context: Context,
+        connection: ScheduledConnection,
+        showIfDueNow: Boolean = true,
+        defaultReminderTime: String? = null
+    ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         cancelNotification(context, connection.id)
 
-        val alarmTimeMillis = alarmTimeFor(connection)
+        val alarmTimeMillis = alarmTimeFor(connection, defaultReminderTime)
         val now = System.currentTimeMillis()
 
         if (alarmTimeMillis <= now) {

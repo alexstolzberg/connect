@@ -68,15 +68,15 @@ class ConnectionRepository @Inject constructor(
         
         val connectionWithId = connection.copy(id = insertedId)
         if (notificationPreferences.areNotificationsEnabled()) {
-            NotificationManager.scheduleNotification(context, connectionWithId, showIfDueNow = false)
+            NotificationManager.scheduleNotification(context, connectionWithId, showIfDueNow = false, defaultReminderTime = notificationPreferences.getDefaultReminderTime())
         }
         return insertedId
     }
-    
+
     suspend fun updateConnection(connection: ScheduledConnection) {
         connectionDao.updateConnection(connection.toEntity())
         if (notificationPreferences.areNotificationsEnabled()) {
-            NotificationManager.scheduleNotification(context, connection)
+            NotificationManager.scheduleNotification(context, connection, defaultReminderTime = notificationPreferences.getDefaultReminderTime())
         }
     }
     
@@ -101,15 +101,15 @@ class ConnectionRepository @Inject constructor(
             nextReminderDate = nextReminderDate
         )
         if (notificationPreferences.areNotificationsEnabled()) {
-            NotificationManager.scheduleNotification(context, updatedConnection)
+            NotificationManager.scheduleNotification(context, updatedConnection, defaultReminderTime = notificationPreferences.getDefaultReminderTime())
         }
     }
-    
+
     suspend fun snoozeReminder(connection: ScheduledConnection, snoozeDate: Date) {
         connectionDao.snoozeReminder(connection.id, snoozeDate)
         val updatedConnection = connection.copy(nextReminderDate = snoozeDate)
         if (notificationPreferences.areNotificationsEnabled()) {
-            NotificationManager.scheduleNotification(context, updatedConnection)
+            NotificationManager.scheduleNotification(context, updatedConnection, defaultReminderTime = notificationPreferences.getDefaultReminderTime())
         }
     }
 
@@ -123,8 +123,9 @@ class ConnectionRepository @Inject constructor(
     /** Reschedules notifications for all active connections (e.g. when user turns notifications on). */
     suspend fun rescheduleAllNotifications() {
         if (!notificationPreferences.areNotificationsEnabled()) return
+        val defaultTime = notificationPreferences.getDefaultReminderTime()
         connectionDao.getAllActiveConnections().first().forEach { entity ->
-            NotificationManager.scheduleNotification(context, entity.toDomain())
+            NotificationManager.scheduleNotification(context, entity.toDomain(), defaultReminderTime = defaultTime)
         }
     }
 }

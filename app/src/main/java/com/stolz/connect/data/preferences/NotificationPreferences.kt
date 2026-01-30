@@ -50,10 +50,22 @@ class NotificationPreferences @Inject constructor(
         }
     }
 
+    /** Default time of day for reminders (HH:mm), e.g. "10:00". Used when a connection has no reminder time set. */
+    fun getDefaultReminderTime(): String =
+        prefs.getString(KEY_DEFAULT_REMINDER_TIME, DEFAULT_REMINDER_TIME) ?: DEFAULT_REMINDER_TIME
+
+    fun setDefaultReminderTime(time: String) {
+        prefs.edit {
+            putString(KEY_DEFAULT_REMINDER_TIME, time)
+        }
+    }
+
     companion object {
         const val PREFS_NAME = "notification_preferences"
         const val KEY_NOTIFICATIONS_ENABLED = "notifications_enabled"
         const val KEY_PROMPT_SHOWN = "notification_prompt_shown"
+        const val KEY_DEFAULT_REMINDER_TIME = "default_reminder_time"
         const val DEFAULT_ENABLED = false
+        const val DEFAULT_REMINDER_TIME = "10:00"
     }
 }

@@ -32,6 +32,9 @@ class SettingsViewModel @Inject constructor(
             initialValue = notificationPreferences.areNotificationsEnabled()
         )
 
+    private val _defaultReminderTime = MutableStateFlow(notificationPreferences.getDefaultReminderTime())
+    val defaultReminderTime: StateFlow<String> = _defaultReminderTime.asStateFlow()
+
     init {
         viewModelScope.launch {
             _themeMode.value = themePreferences.getThemeMode()
@@ -65,6 +68,16 @@ class SettingsViewModel @Inject constructor(
     fun rescheduleAllNotifications() {
         viewModelScope.launch {
             connectionRepository.rescheduleAllNotifications()
+        }
+    }
+
+    fun setDefaultReminderTime(time: String) {
+        notificationPreferences.setDefaultReminderTime(time)
+        _defaultReminderTime.value = time
+        viewModelScope.launch {
+            if (notificationPreferences.areNotificationsEnabled()) {
+                connectionRepository.rescheduleAllNotifications()
+            }
         }
     }
 }
