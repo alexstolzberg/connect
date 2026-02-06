@@ -20,7 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import com.stolz.connect.ui.theme.Dimensions
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -106,13 +106,13 @@ fun MainScreen(
             Box(Modifier.fillMaxSize()) {
                 val bottomPadding = if (currentDestination?.route == Screen.Inbox.route ||
                     currentDestination?.route == Screen.All.route ||
-                    currentDestination?.route == Screen.Settings.route) 72.dp else 16.dp
+                    currentDestination?.route == Screen.Settings.route) Dimensions.snackbarBottomOffset else Dimensions.medium
                 SnackbarHost(
                     hostState = snackbarHostState,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = Dimensions.screenPaddingHorizontal)
                         .padding(bottom = bottomPadding)
                 )
             }

@@ -68,6 +68,7 @@ fun ConnectTheme(
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = ConnectShapes,
         content = {
             CompositionLocalProvider(LocalConnectDarkTheme provides darkTheme) {
                 content()

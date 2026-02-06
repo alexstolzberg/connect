@@ -2,13 +2,17 @@ package com.stolz.connect.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.stolz.connect.data.preferences.AllSortOrder
+import com.stolz.connect.data.preferences.AllSortPreferences
 import com.stolz.connect.data.repository.ConnectionRepository
 import com.stolz.connect.domain.model.ScheduledConnection
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.Date
@@ -16,7 +20,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val connectionRepository: ConnectionRepository
+    private val connectionRepository: ConnectionRepository,
+    private val allSortPreferences: AllSortPreferences
 ) : ViewModel() {
     
     private val _searchQuery = MutableStateFlow("")
@@ -30,6 +35,12 @@ class HomeViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
     
+    val allSortOrder: StateFlow<AllSortOrder> = allSortPreferences.getSortOrderFlow().stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        allSortPreferences.getSortOrder()
+    )
+
     init {
         viewModelScope.launch {
             combine(
@@ -37,8 +48,16 @@ class HomeViewModel @Inject constructor(
                 connectionRepository.getTodayConnections(),
                 _searchQuery,
                 _refreshTrigger,
-                _manuallyAddedConnections
-            ) { allConnections, todayConnections, query, refreshTrigger, manuallyAdded ->
+                _manuallyAddedConnections,
+                allSortPreferences.getSortOrderFlow()
+            ) { values ->
+                val allConnections = values[0] as List<ScheduledConnection>
+                val todayConnections = values[1] as List<ScheduledConnection>
+                val query = values[2] as String
+                values[3] as Long // refreshTrigger - read so combine recomputes when it emits
+                val manuallyAdded = values[4] as Map<Long, ScheduledConnection>
+                val sortOrder = values[5] as AllSortOrder
+
                 // Filter by search query if present
                 val filteredAll = if (query.isBlank()) {
                     allConnections
@@ -49,7 +68,12 @@ class HomeViewModel @Inject constructor(
                         connection.contactEmail?.contains(query, ignoreCase = true) == true
                     }
                 }
-                
+                val sortedAll = when (sortOrder) {
+                    AllSortOrder.A_Z -> filteredAll.sortedBy { it.contactName.lowercase() }
+                    AllSortOrder.DATE_ASCENDING -> filteredAll.sortedBy { it.nextReminderDate.time }
+                    AllSortOrder.DATE_DESCENDING -> filteredAll.sortedByDescending { it.nextReminderDate.time }
+                }
+
                 val filteredToday = if (query.isBlank()) {
                     todayConnections
                 } else {
@@ -59,44 +83,36 @@ class HomeViewModel @Inject constructor(
                         connection.contactEmail?.contains(query, ignoreCase = true) == true
                     }
                 }
-                
+
                 // Merge manually added connections with todayConnections
-                // This ensures connections that were just marked as contacted appear even if outside 7-day window
-                // Use manually added version if it exists (more recent), otherwise use Room Flow version
                 val currentState = _uiState.value
-                
-                // If we have manually added connections, prefer the current state's todayConnections
-                // (which may have been manually updated) over the Room Flow version
                 val baseTodayConnections = if (manuallyAdded.isNotEmpty() && currentState.todayConnections.isNotEmpty()) {
-                    // Prefer current state (which has manual updates) over Room Flow
                     currentState.todayConnections
                 } else {
                     filteredToday
                 }
-                
-                // Merge manually added versions into the base list
-                val finalTodayConnections = (
+
+                val baseIds = baseTodayConnections.map { c -> c.id }.toSet()
+                val finalTodayConnections: List<ScheduledConnection> = (
                     baseTodayConnections.map { conn ->
                         manuallyAdded[conn.id] ?: conn
-                    } + manuallyAdded.values.filter { it.id !in baseTodayConnections.map { it.id } }
-                ).distinctBy { it.id }
-                
-                // Recalculate sections with the merged todayConnections
-                val roomConnectionIds = finalTodayConnections.map { it.id }.toSet()
-                val finalAllInboxConnections = (
+                    } + manuallyAdded.values.filter { conn -> conn.id !in baseIds }
+                ).distinctBy(ScheduledConnection::id)
+
+                val roomConnectionIds = finalTodayConnections.map { c -> c.id }.toSet()
+                val finalAllInboxConnections: List<ScheduledConnection> = (
                     finalTodayConnections.map { connection ->
                         manuallyAdded[connection.id] ?: connection
-                    } + manuallyAdded.values.filter { it.id !in roomConnectionIds }
-                ).distinctBy { it.id }
-                
-                // Organize inbox connections into sections
+                    } + manuallyAdded.values.filter { conn -> conn.id !in roomConnectionIds }
+                ).distinctBy(ScheduledConnection::id)
+
                 val inboxSections = organizeIntoSections(finalAllInboxConnections)
-                
+
                 HomeUiState(
-                    allConnections = filteredAll,
+                    allConnections = sortedAll,
                     todayConnections = finalTodayConnections,
                     inboxSections = inboxSections,
-                    refreshCounter = currentState.refreshCounter // Preserve refresh counter
+                    refreshCounter = currentState.refreshCounter
                 )
             }.collect { state ->
                 _uiState.value = state
@@ -106,6 +122,10 @@ class HomeViewModel @Inject constructor(
     
     fun setSearchQuery(query: String) {
         _searchQuery.value = query
+    }
+
+    fun setAllSortOrder(order: AllSortOrder) {
+        allSortPreferences.setSortOrder(order)
     }
     
     // Public function to refresh connections if needed

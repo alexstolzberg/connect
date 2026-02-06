@@ -15,7 +15,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -23,6 +22,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.graphics.Color
 import com.stolz.connect.platform.ContactHelper
+import com.stolz.connect.ui.design.EmptyState
 import com.stolz.connect.ui.theme.Dimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -76,7 +76,11 @@ fun HomeScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddClick) {
+            FloatingActionButton(
+                onClick = onAddClick,
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Connection")
             }
         }
@@ -138,23 +142,14 @@ fun TodayTab(
     onMarkComplete: (com.stolz.connect.domain.model.ScheduledConnection) -> Unit
 ) {
     if (connections.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(Dimensions.xlarge),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No connections due today.\nTap the + button to add one.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        EmptyState(
+            message = "No connections due today.\nTap the + button to add one."
+        )
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(Dimensions.medium),
-            verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
+            contentPadding = PaddingValues(Dimensions.screenPaddingHorizontal),
+            verticalArrangement = Arrangement.spacedBy(Dimensions.listItemSpacing)
         ) {
             items(
                 items = connections,
@@ -187,23 +182,14 @@ fun AllTab(
     onMarkComplete: (com.stolz.connect.domain.model.ScheduledConnection) -> Unit
 ) {
     if (connections.isEmpty()) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(Dimensions.xlarge),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "No connections yet.\nTap the + button to add one.",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
+        EmptyState(
+            message = "No connections yet.\nTap the + button to add one."
+        )
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(horizontal = Dimensions.medium, vertical = Dimensions.xsmall),
-            verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
+            contentPadding = PaddingValues(horizontal = Dimensions.screenPaddingHorizontal, vertical = Dimensions.listItemSpacing),
+            verticalArrangement = Arrangement.spacedBy(Dimensions.listItemSpacing)
         ) {
             items(
                 items = connections,

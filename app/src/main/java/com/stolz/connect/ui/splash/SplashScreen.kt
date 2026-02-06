@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.stolz.connect.ui.theme.Dimensions
 import androidx.compose.foundation.Image
@@ -67,7 +66,7 @@ fun Splash(alpha: Float) {
                 painter = painterResource(id = com.stolz.connect.R.drawable.ic_launcher_foreground),
                 contentDescription = "Connect App Icon",
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(Dimensions.avatarXLarge)
                     .alpha(alpha = alpha)
             )
             Spacer(modifier = Modifier.height(Dimensions.large))

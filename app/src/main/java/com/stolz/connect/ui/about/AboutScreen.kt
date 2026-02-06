@@ -13,7 +13,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.stolz.connect.ui.theme.Dimensions
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,10 +43,10 @@ fun AboutScreen(
         }
         // Only use bottom padding to avoid double top padding
         val contentPadding = PaddingValues(
-            top = 0.dp,
+            top = Dimensions.spacingNone,
             bottom = paddingValues.calculateBottomPadding(),
-            start = 0.dp,
-            end = 0.dp
+            start = Dimensions.spacingNone,
+            end = Dimensions.spacingNone
         )
         Column(
             modifier = Modifier
@@ -66,7 +65,7 @@ fun AboutScreen(
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = null,
-                    modifier = Modifier.size(64.dp),
+                    modifier = Modifier.size(Dimensions.xxxlarge),
                     tint = MaterialTheme.colorScheme.primary
                 )
                 Spacer(modifier = Modifier.width(Dimensions.medium))
@@ -196,7 +195,7 @@ fun HowToStep(
         horizontalArrangement = Arrangement.spacedBy(Dimensions.medium)
     ) {
         Surface(
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(Dimensions.avatarMedium),
             shape = MaterialTheme.shapes.medium,
             color = MaterialTheme.colorScheme.primaryContainer
         ) {

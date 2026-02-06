@@ -25,8 +25,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.stolz.connect.ui.design.ConnectPrimaryButton
+import com.stolz.connect.ui.design.EmptyState
 import com.stolz.connect.ui.theme.Dimensions
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -148,41 +149,23 @@ fun InboxScreen(
             val hasConnections = uiState.inboxSections.any { it.connections.isNotEmpty() }
             
             if (!hasConnections) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(Dimensions.xlarge),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.medium)
-                    ) {
-                        Text(
-                            text = if (searchQuery.isNotBlank()) {
-                                "No connections found matching \"$searchQuery\"."
-                            } else {
-                                "No connections due in the next week."
-                            },
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                        )
-                        if (searchQuery.isBlank()) {
-                            Button(
-                                onClick = onAddClick
+                EmptyState(
+                    message = if (searchQuery.isNotBlank()) {
+                        "No connections found matching \"$searchQuery\"."
+                    } else {
+                        "No connections due in the next week."
+                    },
+                    action = if (searchQuery.isBlank()) {
+                        {
+                            ConnectPrimaryButton(
+                                onClick = onAddClick,
+                                leadingIcon = Icons.Default.Add
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Add Connection")
                             }
                         }
-                    }
-                }
+                    } else null
+                )
             } else {
                 Box(
                     modifier = Modifier
@@ -192,12 +175,12 @@ fun InboxScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
-                            top = paddingValues.calculateTopPadding() + Dimensions.medium,
-                            start = Dimensions.medium,
-                            end = Dimensions.medium,
-                            bottom = paddingValues.calculateBottomPadding() + Dimensions.medium + 80.dp // Extra space for FAB
+                            top = paddingValues.calculateTopPadding() + Dimensions.screenPaddingVertical,
+                            start = Dimensions.screenPaddingHorizontal,
+                            end = Dimensions.screenPaddingHorizontal,
+                            bottom = paddingValues.calculateBottomPadding() + Dimensions.screenPaddingVertical + Dimensions.bottomBarHeight
                         ),
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.listItemSpacing)
                     ) {
                         // Flatten sections into a single list so LazyColumn can track items moving between sections
                         uiState.inboxSections.forEachIndexed { sectionIndex, section ->
@@ -207,8 +190,8 @@ fun InboxScreen(
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.padding(
-                                        top = if (sectionIndex == 0) 0.dp else Dimensions.large,
-                                        bottom = Dimensions.xsmall
+                                        top = if (sectionIndex == 0) Dimensions.spacingNone else Dimensions.sectionSpacing,
+                                        bottom = Dimensions.listItemSpacing
                                     ),
                                     color = MaterialTheme.colorScheme.primary
                                 )

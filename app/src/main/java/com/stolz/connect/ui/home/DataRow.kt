@@ -12,7 +12,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.stolz.connect.ui.theme.ConnectionColors
 import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.ui.theme.isConnectDarkTheme
@@ -43,7 +42,7 @@ fun DataRow(
             color = labelColor,
             fontWeight = FontWeight.Medium
         )
-        Spacer(modifier = Modifier.height(1.dp))
+        Spacer(modifier = Modifier.height(Dimensions.dataRowLabelToValue))
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -62,13 +61,13 @@ fun DataRow(
                     actions.forEach { action ->
                         IconButton(
                             onClick = action.onClick,
-                            modifier = Modifier.size(Dimensions.xlarge)
+                            modifier = Modifier.size(Dimensions.iconExtraLarge)
                         ) {
                             Icon(
                                 imageVector = action.icon,
                                 contentDescription = action.contentDescription,
                                 tint = if (colorCategory != null) valueColor else MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(Dimensions.iconSmall)
                             )
                         }
                     }

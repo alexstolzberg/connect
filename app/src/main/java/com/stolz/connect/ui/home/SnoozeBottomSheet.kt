@@ -9,7 +9,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.stolz.connect.ui.theme.Dimensions
 import java.util.Calendar
 import java.util.Date
@@ -155,7 +154,7 @@ private fun SnoozeOption(
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(Dimensions.iconSmall),
                 tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.width(Dimensions.small))

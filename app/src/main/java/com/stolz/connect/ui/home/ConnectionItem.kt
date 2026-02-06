@@ -22,10 +22,10 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.domain.model.ScheduledConnection
+import com.stolz.connect.ui.design.ConnectCard
 import com.stolz.connect.ui.theme.ConnectionColors
 import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.ui.theme.isConnectDarkTheme
@@ -184,88 +184,74 @@ fun ConnectionItem(
     val relativeTimeText = remember(refreshTrigger, connection.lastContactedDate) {
         connection.lastContactedDate?.let { TimeFormatter.formatRelativeTime(it) }
     }
-    
-    Card(
+
+    val actionTint = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.primary
+
+    ConnectCard(
         modifier = Modifier
             .fillMaxWidth()
             .alpha(animationState.itemAlpha)
             .offset { IntOffset(animationState.itemOffsetX.toInt(), 0) }
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(
-            containerColor = colors.backgroundColor,
-            contentColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurface
-        ),
+        onClick = null,
+        containerColor = colors.backgroundColor,
+        contentColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurface,
         border = BorderStroke(
             width = Dimensions.xxxsmall,
             color = colors.outlineColor
-        )
+        ),
+        leadingBarColor = colors.indicatorColor
     ) {
-        Box(modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(Dimensions.medium)
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    ConnectionItemAvatar(connection)
-                    
-                    ConnectionItemContent(
-                        connection = connection,
-                        dateFormat = dateFormat,
-                        onCallClick = onCallClick,
-                        onMessageClick = onMessageClick,
-                        onEmailClick = onEmailClick,
-                        colorCategory = colorCategory,
-                        refreshTrigger = refreshTrigger,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                
-                Spacer(modifier = Modifier.height(6.dp))
-                
-                ConnectionItemMetadata(
+                ConnectionItemAvatar(connection)
+
+                ConnectionItemContent(
                     connection = connection,
                     dateFormat = dateFormat,
+                    onCallClick = onCallClick,
+                    onMessageClick = onMessageClick,
+                    onEmailClick = onEmailClick,
+                    colorCategory = colorCategory,
+                    refreshTrigger = refreshTrigger,
                     relativeTimeText = relativeTimeText,
                     indicatorColor = colors.indicatorColor,
-                    colorCategory = colorCategory,
-                    isSnoozed = isSnoozed
+                    isSnoozed = isSnoozed,
+                    modifier = Modifier.weight(1f)
                 )
             }
-            
-            // Show action buttons for all items
+
+            // Actions in a dedicated row so they don't overlap the name
+            Spacer(modifier = Modifier.height(Dimensions.small))
             Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(Dimensions.xsmall)
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Snooze button (black in dark mode to match card text on light surfaces)
                 if (onSnoozeClick != null) {
                     IconButton(
                         onClick = onSnoozeClick,
-                        modifier = Modifier.size(48.dp),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            contentColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.primary
-                        )
+                        modifier = Modifier.size(Dimensions.iconButtonSize),
+                        colors = IconButtonDefaults.iconButtonColors(contentColor = actionTint)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Snooze,
                             contentDescription = "Snooze",
-                            tint = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.primary
+                            tint = actionTint
                         )
                     }
                 }
-                
-                // Checkmark button (black/gray in dark mode on light card, then green when marked)
                 IconButton(
                     onClick = animationState.handleMarkComplete,
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(Dimensions.iconButtonSize)
                         .scale(animationState.checkmarkScaleAnim),
                     colors = IconButtonDefaults.iconButtonColors(
-                        contentColor = if (isDarkTheme && animationState.checkmarkState != 2) ConnectionColors.OnCardDark else animationState.checkmarkColor
+                        contentColor = if (animationState.checkmarkState == 2) animationState.checkmarkColor else actionTint
                     )
                 ) {
                     Icon(
@@ -290,7 +276,7 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
             model = connection.contactPhotoUri,
             contentDescription = connection.contactName,
             modifier = Modifier
-                .size(40.dp)
+                .size(Dimensions.avatarMedium)
                 .clip(MaterialTheme.shapes.medium),
             contentScale = ContentScale.Crop
         )
@@ -304,7 +290,7 @@ private fun ConnectionItemAvatar(connection: ScheduledConnection) {
         val initials = NameUtils.getInitials(connection.contactName)
         
         Surface(
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(Dimensions.avatarMedium),
             shape = MaterialTheme.shapes.medium,
             color = avatarColor
         ) {
@@ -331,6 +317,9 @@ private fun ConnectionItemContent(
     onEmailClick: (() -> Unit)?,
     colorCategory: ContactColorCategory,
     refreshTrigger: Int,
+    relativeTimeText: String?,
+    indicatorColor: Color,
+    isSnoozed: Boolean,
     modifier: Modifier = Modifier
 ) {
     val isDarkTheme = isConnectDarkTheme()
@@ -343,7 +332,7 @@ private fun ConnectionItemContent(
             fontWeight = FontWeight.Bold,
             color = textColor
         )
-        Spacer(modifier = Modifier.height(Dimensions.xxsmall))
+        Spacer(modifier = Modifier.height(Dimensions.dataRowSpacing))
         
         if (connection.contactPhoneNumber != null) {
             val phoneActions = mutableListOf<DataRowAction>()
@@ -380,7 +369,7 @@ private fun ConnectionItemContent(
         
         if (connection.contactEmail != null) {
             if (connection.contactPhoneNumber != null) {
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(Dimensions.dataRowSpacing))
             }
             DataRow(
                 label = "Email",
@@ -398,7 +387,7 @@ private fun ConnectionItemContent(
         
         if (connection.birthday != null) {
             if (connection.contactPhoneNumber != null || connection.contactEmail != null) {
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(Dimensions.dataRowSpacing))
             }
             // Check if today is the birthday
             val isBirthdayToday = remember(connection.birthday, refreshTrigger) {
@@ -440,7 +429,7 @@ private fun ConnectionItemContent(
         
         if (connection.notes != null && connection.notes.isNotBlank()) {
             if (connection.contactPhoneNumber != null || connection.contactEmail != null || connection.birthday != null) {
-                Spacer(modifier = Modifier.height(3.dp))
+                Spacer(modifier = Modifier.height(Dimensions.dataRowSpacing))
             }
             DataRow(
                 label = "Notes",
@@ -448,6 +437,17 @@ private fun ConnectionItemContent(
                 colorCategory = colorCategory
             )
         }
+
+        // Next / Last aligned with other rows (same indented column)
+        Spacer(modifier = Modifier.height(Dimensions.dataRowSpacing))
+        ConnectionItemMetadata(
+            connection = connection,
+            dateFormat = dateFormat,
+            relativeTimeText = relativeTimeText,
+            indicatorColor = indicatorColor,
+            colorCategory = colorCategory,
+            isSnoozed = isSnoozed
+        )
     }
 }
 
@@ -461,63 +461,56 @@ private fun ConnectionItemMetadata(
     isSnoozed: Boolean
 ) {
     val isDarkTheme = isConnectDarkTheme()
-    val textColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurfaceVariant
+    val labelColor = if (isDarkTheme) ConnectionColors.OnCardDark.copy(alpha = 0.85f) else MaterialTheme.colorScheme.onSurfaceVariant
     val valueColor = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.onSurface
     val errorTextColor = if (isDarkTheme) Color(0xFFB71C1C) else MaterialTheme.colorScheme.error
-    
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
-    ) {
-        Text(
-            text = "Next:",
-            style = MaterialTheme.typography.bodyMedium,
-            color = textColor
-        )
-        Text(
-            text = dateFormat.format(connection.nextReminderDate),
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            color = valueColor
-        )
-        // Show snooze indicator if item was snoozed (use text color for readability on colored card)
-        if (isSnoozed) {
-            Icon(
-                imageVector = Icons.Outlined.Snooze,
-                contentDescription = "Snoozed",
-                tint = textColor,
-                modifier = Modifier.size(Dimensions.medium)
+
+    // Same label/value structure as DataRow so Next and Last line up with Phone, Email, etc.
+    Column(verticalArrangement = Arrangement.spacedBy(Dimensions.dataRowSpacing)) {
+        Column {
+            Text(
+                text = "Next reminder",
+                style = MaterialTheme.typography.labelSmall,
+                color = labelColor,
+                fontWeight = FontWeight.Medium
             )
+            Spacer(modifier = Modifier.height(Dimensions.dataRowLabelToValue))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
+            ) {
+                Text(
+                    text = dateFormat.format(connection.nextReminderDate),
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = valueColor
+                )
+                if (isSnoozed) {
+                    Icon(
+                        imageVector = Icons.Outlined.Snooze,
+                        contentDescription = "Snoozed",
+                        tint = labelColor,
+                        modifier = Modifier.size(Dimensions.iconSmall)
+                    )
+                }
+            }
         }
-    }
-    
-    val relativeTimeColor = indicatorColor
-    if (connection.lastContactedDate != null) {
-        Spacer(modifier = Modifier.height(3.dp))
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Dimensions.xxsmall)
-        ) {
+        Column {
             Text(
-                text = "Last:",
-                style = MaterialTheme.typography.bodyMedium,
-                color = textColor
+                text = "Last contacted",
+                style = MaterialTheme.typography.labelSmall,
+                color = labelColor,
+                fontWeight = FontWeight.Medium
             )
+            Spacer(modifier = Modifier.height(Dimensions.dataRowLabelToValue))
             Text(
-                text = relativeTimeText ?: "",
-                style = MaterialTheme.typography.bodyMedium,
+                text = if (connection.lastContactedDate != null) (relativeTimeText ?: "") else "Never contacted",
+                style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = relativeTimeColor
+                color = if (connection.lastContactedDate != null) indicatorColor else errorTextColor,
+                fontStyle = if (connection.lastContactedDate != null) androidx.compose.ui.text.font.FontStyle.Normal else androidx.compose.ui.text.font.FontStyle.Italic
             )
         }
-    } else {
-        Spacer(modifier = Modifier.height(3.dp))
-        Text(
-            text = "Never contacted",
-            style = MaterialTheme.typography.bodyMedium,
-            color = errorTextColor,
-            fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-        )
     }
 }
 

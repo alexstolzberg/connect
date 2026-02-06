@@ -13,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,7 +25,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import com.stolz.connect.data.preferences.AllSortOrder
+import com.stolz.connect.ui.design.ConnectPrimaryButton
+import com.stolz.connect.ui.design.EmptyState
 import com.stolz.connect.ui.theme.Dimensions
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -45,6 +49,8 @@ fun AllScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val allSortOrder by viewModel.allSortOrder.collectAsState()
+    var sortMenuExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
     var searchActive by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
@@ -123,6 +129,65 @@ fun AllScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { sortMenuExpanded = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Sort,
+                            contentDescription = "Sort by"
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = sortMenuExpanded,
+                        onDismissRequest = { sortMenuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("A–Z") },
+                            onClick = {
+                                viewModel.setAllSortOrder(AllSortOrder.A_Z)
+                                sortMenuExpanded = false
+                            },
+                            leadingIcon = {
+                                if (allSortOrder == AllSortOrder.A_Z) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(Dimensions.iconSmall)
+                                    )
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Date (soonest first)") },
+                            onClick = {
+                                viewModel.setAllSortOrder(AllSortOrder.DATE_ASCENDING)
+                                sortMenuExpanded = false
+                            },
+                            leadingIcon = {
+                                if (allSortOrder == AllSortOrder.DATE_ASCENDING) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(Dimensions.iconSmall)
+                                    )
+                                }
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Date (latest first)") },
+                            onClick = {
+                                viewModel.setAllSortOrder(AllSortOrder.DATE_DESCENDING)
+                                sortMenuExpanded = false
+                            },
+                            leadingIcon = {
+                                if (allSortOrder == AllSortOrder.DATE_DESCENDING) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(Dimensions.iconSmall)
+                                    )
+                                }
+                            }
+                        )
+                    }
                     IconButton(onClick = { 
                         if (searchActive) {
                             viewModel.setSearchQuery("")
@@ -142,41 +207,23 @@ fun AllScreen(
             modifier = Modifier.fillMaxSize()
         ) {
             if (uiState.allConnections.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(Dimensions.xlarge),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.medium)
-                    ) {
-                        Text(
-                            text = if (searchQuery.isNotBlank()) {
-                                "No connections found matching \"$searchQuery\"."
-                            } else {
-                                "No connections yet."
-                            },
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                        if (searchQuery.isBlank()) {
-                            Button(
-                                onClick = onAddClick
+                EmptyState(
+                    message = if (searchQuery.isNotBlank()) {
+                        "No connections found matching \"$searchQuery\"."
+                    } else {
+                        "No connections yet."
+                    },
+                    action = if (searchQuery.isBlank()) {
+                        {
+                            ConnectPrimaryButton(
+                                onClick = onAddClick,
+                                leadingIcon = Icons.Default.Add
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Add Connection")
                             }
                         }
-                    }
-                }
+                    } else null
+                )
             } else {
                 Box(
                     modifier = Modifier
@@ -186,12 +233,12 @@ fun AllScreen(
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(
-                            top = paddingValues.calculateTopPadding() + Dimensions.medium,
-                            start = Dimensions.medium,
-                            end = Dimensions.medium,
-                            bottom = paddingValues.calculateBottomPadding() + Dimensions.medium + 80.dp // Extra space for FAB
+                            top = paddingValues.calculateTopPadding() + Dimensions.screenPaddingVertical,
+                            start = Dimensions.screenPaddingHorizontal,
+                            end = Dimensions.screenPaddingHorizontal,
+                            bottom = paddingValues.calculateBottomPadding() + Dimensions.screenPaddingVertical + Dimensions.bottomBarHeight
                         ),
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.listItemSpacing)
                     ) {
                         items(
                             items = uiState.allConnections,

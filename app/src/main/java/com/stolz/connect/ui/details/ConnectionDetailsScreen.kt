@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
@@ -34,6 +33,8 @@ import com.stolz.connect.ui.theme.isConnectDarkTheme
 import com.stolz.connect.util.ContactColorCategory
 import com.stolz.connect.util.StringUtils
 import com.stolz.connect.util.TimeFormatter
+import com.stolz.connect.ui.design.ConnectPrimaryButton
+import com.stolz.connect.ui.design.ConnectTextButton
 import com.stolz.connect.ui.theme.Dimensions
 import com.stolz.connect.util.PhoneNumberFormatter
 import kotlinx.coroutines.delay
@@ -203,7 +204,7 @@ fun ConnectionDetailsScreen(
                             contentColor = cardContentColor
                         ),
                         border = androidx.compose.foundation.BorderStroke(
-                            width = 3.dp,
+                            width = Dimensions.borderThick,
                             color = indicatorColor.copy(alpha = 0.7f)
                         )
                     ) {
@@ -378,13 +379,10 @@ fun ConnectionDetailsScreen(
                             (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.CALL ||
                              connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
                         ) {
-                            Button(
-                                onClick = {
-                                    handleCallClick(connection.contactPhoneNumber)
-                                }
+                            ConnectPrimaryButton(
+                                onClick = { handleCallClick(connection.contactPhoneNumber) },
+                                leadingIcon = Icons.Default.Phone
                             ) {
-                                Icon(Icons.Default.Phone, contentDescription = null)
-                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Call")
                             }
                         }
@@ -392,13 +390,10 @@ fun ConnectionDetailsScreen(
                             (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.MESSAGE ||
                              connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
                         ) {
-                            Button(
-                                onClick = {
-                                    ContactHelper.sendMessage(context, connection.contactPhoneNumber)
-                                }
+                            ConnectPrimaryButton(
+                                onClick = { ContactHelper.sendMessage(context, connection.contactPhoneNumber) },
+                                leadingIcon = Icons.Default.Send
                             ) {
-                                Icon(Icons.Default.Send, contentDescription = null)
-                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Message")
                             }
                         }
@@ -406,29 +401,22 @@ fun ConnectionDetailsScreen(
                             (connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.EMAIL ||
                              connection.preferredMethod == com.stolz.connect.domain.model.ConnectionMethod.BOTH)
                         ) {
-                            Button(
-                                onClick = {
-                                    ContactHelper.sendEmail(context, connection.contactEmail)
-                                }
+                            ConnectPrimaryButton(
+                                onClick = { ContactHelper.sendEmail(context, connection.contactEmail) },
+                                leadingIcon = Icons.Default.Email
                             ) {
-                                Icon(Icons.Default.Email, contentDescription = null)
-                                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                                 Text("Email")
                             }
                         }
                     }
                     
                     if (connection.isDueToday) {
-                        Button(
+                        ConnectPrimaryButton(
                             onClick = {
                                 viewModel.markAsContacted()
                                 onShowSnackbar("Marked as contacted")
                             },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            )
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Text("Mark as Contacted")
                         }
@@ -453,7 +441,7 @@ fun ConnectionDetailsScreen(
             title = { Text("Delete Connection") },
             text = { Text("Are you sure you want to delete this connection?") },
             confirmButton = {
-                TextButton(
+                ConnectTextButton(
                     onClick = {
                         viewModel.deleteConnection()
                         showDeleteDialog = false
@@ -463,7 +451,7 @@ fun ConnectionDetailsScreen(
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
+                ConnectTextButton(onClick = { showDeleteDialog = false }) {
                     Text("Cancel")
                 }
             }

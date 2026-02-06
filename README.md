@@ -67,7 +67,13 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-### Version 1.3.14 (Latest)
+### Version 1.3.15 (Latest)
+- 🎨 **Design system**: Standardized spacing (Dimensions), shapes, and typography; reusable building blocks: ConnectCard, ConnectButton, ConnectIcon, EmptyState, SectionHeader; app migrated to use them throughout
+- 🃏 **Connection cards**: Status bar on the left (green/yellow/red); Snooze and Mark-complete actions in a bottom row (no overlap with name); Next/Last reminder and Last contacted aligned with other rows using same label/value pattern
+- 📋 **All pane sort**: Sort by A–Z, Date (soonest first), or Date (latest first); choice remembered across sessions (Sort icon in All screen app bar)
+- 📐 **Data row spacing**: Consistent spacing between data rows (Phone, Email, Birthday, Notes, Next/Last) and between label and value for easier reading
+
+### Version 1.3.14
 - 🏷️ Connection details: Non-clickable pill shows "From contacts" or "Manually added" (View Contact / Search / Add actions removed)
 - 🧹 Removed unused ContactHelper code: openContactInPhone, openContactsWithSearch, addContactToPhone, canOpenContactInPhone
 - 🧹 Cleanup: Duplicate imports removed in ConnectionDetailsScreen and AddEditScreen

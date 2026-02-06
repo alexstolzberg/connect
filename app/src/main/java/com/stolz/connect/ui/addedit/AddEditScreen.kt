@@ -26,8 +26,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.stolz.connect.ui.design.ConnectOutlinedButton
+import com.stolz.connect.ui.design.ConnectTextButton
 import com.stolz.connect.domain.model.ConnectionMethod
 import com.stolz.connect.util.ValidationUtils
 import com.stolz.connect.util.PhoneNumberTransformation
@@ -213,7 +214,7 @@ fun AddEditScreen(
                 onDismissRequest = { viewModel.clearDuplicateCandidates() },
                 title = { Text(if (isEdit) "Possible duplicate" else "Possible duplicate") },
                 text = {
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Dimensions.inlineSpacing)) {
                         Text(
                             if (isEdit) {
                                 "Another connection has the same name, phone, or email (e.g. \"${existing.contactName}\"). " +
@@ -241,7 +242,7 @@ fun AddEditScreen(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = {
+                    ConnectTextButton(onClick = {
                         viewModel.clearDuplicateCandidates()
                         onViewExistingConnection(existing.id)
                     }) {
@@ -278,7 +279,7 @@ fun AddEditScreen(
                     }
                 },
                 actions = {
-                    TextButton(
+                    ConnectTextButton(
                         onClick = viewModel::saveConnection,
                         enabled = isFormValid
                     ) {
@@ -431,11 +432,11 @@ fun AddEditScreen(
                 
                 Box(
                     modifier = Modifier
-                        .size(120.dp)
+                        .size(Dimensions.avatarXLarge)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(120.dp)
+                            .size(Dimensions.avatarXLarge)
                             .clip(CircleShape)
                             .clickable { showPhotoOptions = true }
                     ) {
@@ -469,7 +470,7 @@ fun AddEditScreen(
                     Surface(
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
-                            .offset(x = (-4).dp, y = (-4).dp)
+                            .offset(x = (-Dimensions.xxsmall), y = (-Dimensions.xxsmall))
                             .clickable { showPhotoOptions = true },
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.surface,
@@ -480,8 +481,8 @@ fun AddEditScreen(
                             contentDescription = "Edit Photo",
                             tint = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
-                                .size(36.dp)
-                                .padding(Dimensions.xsmall)
+                                .size(Dimensions.xxxlarge)
+                                .padding(Dimensions.inlineSpacing)
                         )
                     }
                 }
@@ -495,7 +496,7 @@ fun AddEditScreen(
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                             ) {
-                                TextButton(
+                                ConnectTextButton(
                                     onClick = {
                                         showPhotoOptions = false
                                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -511,28 +512,26 @@ fun AddEditScreen(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Icon(Icons.Default.Photo, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(Dimensions.xsmall))
+                                    Spacer(modifier = Modifier.width(Dimensions.inlineSpacing))
                                     Text("Choose from Gallery")
                                 }
-                                TextButton(
+                                ConnectTextButton(
                                     onClick = {
                                         showPhotoOptions = false
-                                        // Check for camera permission first
                                         if (PermissionHelper.hasCameraPermission(context)) {
                                             launchCamera()
                                         } else {
-                                            // Request camera permission
                                             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                                         }
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Icon(Icons.Default.CameraAlt, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(Dimensions.xsmall))
+                                    Spacer(modifier = Modifier.width(Dimensions.inlineSpacing))
                                     Text("Take Photo")
                                 }
                                 if (photoUri != null) {
-                                    TextButton(
+                                    ConnectTextButton(
                                         onClick = {
                                             showPhotoOptions = false
                                             viewModel.updateContactPhotoUri(null)
@@ -544,7 +543,7 @@ fun AddEditScreen(
                                     }
                                 }
                                 
-                                Divider(modifier = Modifier.padding(vertical = Dimensions.xsmall))
+                                Divider(modifier = Modifier.padding(vertical = Dimensions.inlineSpacing))
                                 
                                 Text(
                                     text = "Choose Avatar Color",
@@ -559,7 +558,7 @@ fun AddEditScreen(
                                     verticalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(120.dp)
+                                        .height(Dimensions.avatarXLarge)
                                 ) {
                                     items(AvatarColors.colors.size) { index ->
                                         val color = AvatarColors.colors[index]
@@ -573,7 +572,7 @@ fun AddEditScreen(
                                         
                                         Surface(
                                             modifier = Modifier
-                                                .size(40.dp)
+                                                .size(Dimensions.avatarMedium)
                                                 .clip(CircleShape)
                                                 .clickable {
                                                     viewModel.updateAvatarColor(colorInt)
@@ -582,7 +581,7 @@ fun AddEditScreen(
                                                     if (isSelected) {
                                                         Modifier
                                                             .border(
-                                                                width = 3.dp,
+                                                                width = Dimensions.borderThick,
                                                                 color = MaterialTheme.colorScheme.primary,
                                                                 shape = CircleShape
                                                             )
@@ -598,7 +597,7 @@ fun AddEditScreen(
                             }
                         },
                         confirmButton = {
-                            TextButton(onClick = { showPhotoOptions = false }) {
+                            ConnectTextButton(onClick = { showPhotoOptions = false }) {
                                 Text("Done")
                             }
                         }
@@ -609,14 +608,11 @@ fun AddEditScreen(
             Spacer(modifier = Modifier.height(Dimensions.xsmall))
             
             // Contact selection
-            OutlinedButton(
-                onClick = {
-                    launchContactPicker()
-                },
-                modifier = Modifier.fillMaxWidth()
+            ConnectOutlinedButton(
+                onClick = { launchContactPicker() },
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = Icons.Default.Person
             ) {
-                Icon(Icons.Default.Person, contentDescription = null)
-                Spacer(modifier = Modifier.width(Dimensions.xsmall))
                 Text("Pick from Contacts")
             }
             
@@ -662,7 +658,7 @@ fun AddEditScreen(
             )
             
             // Reminder frequency
-            Text("Reminder Frequency (days)", style = MaterialTheme.typography.labelLarge)
+            Text("Reminder Frequency (days)", style = MaterialTheme.typography.titleSmall)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
@@ -737,7 +733,7 @@ fun AddEditScreen(
             val hasPhone = !phoneNumber.isNullOrBlank()
             val hasEmail = !email.isNullOrBlank()
             
-            Text("Preferred Method", style = MaterialTheme.typography.labelLarge)
+            Text("Preferred Method", style = MaterialTheme.typography.titleSmall)
             FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall),
@@ -776,7 +772,7 @@ fun AddEditScreen(
             // Birthday (optional)
             var showDatePicker by remember { mutableStateOf(false) }
             
-            Text("Birthday (optional)", style = MaterialTheme.typography.labelLarge)
+            Text("Birthday (optional)", style = MaterialTheme.typography.titleSmall)
             if (uiState.birthday != null) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -790,10 +786,10 @@ fun AddEditScreen(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(Dimensions.xsmall)
                     ) {
-                        TextButton(onClick = { showDatePicker = true }) {
+                        ConnectTextButton(onClick = { showDatePicker = true }) {
                             Text("Edit")
                         }
-                        TextButton(onClick = { viewModel.updateBirthday(null) }) {
+                        ConnectTextButton(onClick = { viewModel.updateBirthday(null) }) {
                             Text("Clear")
                         }
                     }
