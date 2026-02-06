@@ -70,10 +70,10 @@ The app requires the following permissions:
 
 ## Recent Updates
 
-**Version 1.3.16** (Android & iOS — versions aligned)
+**Version 1.3.17** (Android & iOS — versions aligned)
 
-- **[iOS]** Snooze indicator on cards; Inbox/All refresh after contact or snooze; accent color matches Android; white rounded splash; Last contacted row; snooze/complete on green cards; preferred method must match phone/email; Inbox loads on first launch.
-- **[Android]** Preferred method auto-resets when invalid (e.g. Email selected then email cleared).
+- **[iOS]** Card and connection-details action buttons (Call, Message, FaceTime, Email) open the correct app; FaceTime row always shown on details when phone present; double confirm on delete; email/birthday on card in same format as phone.
+- **[Android]** Double confirm on delete.
 
 Full release history: **[CHANGELOG.md](CHANGELOG.md)**.
 

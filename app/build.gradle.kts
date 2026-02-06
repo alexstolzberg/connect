@@ -17,8 +17,8 @@ android {
         applicationId = "com.stolz.connect"
         minSdk = 24
         targetSdk = 35
-        versionCode = 16  // Increment for each release
-        versionName = "1.3.16"  // Keep in sync with iOS MARKETING_VERSION
+        versionCode = 17  // Increment for each release
+        versionName = "1.3.17"  // Keep in sync with iOS MARKETING_VERSION
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

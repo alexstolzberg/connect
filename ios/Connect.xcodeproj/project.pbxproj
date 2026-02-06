@@ -432,6 +432,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Connect/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Connect uses the camera to take a photo for the connection.";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Connect uses your contacts so you can add reminders for people you know.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Connect uses the photo library to choose a photo for the connection.";
@@ -443,7 +444,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.16;
+				MARKETING_VERSION = 1.3.17;
 				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.Connect;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -462,6 +463,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Connect/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Connect uses the camera to take a photo for the connection.";
 				INFOPLIST_KEY_NSContactsUsageDescription = "Connect uses your contacts so you can add reminders for people you know.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Connect uses the photo library to choose a photo for the connection.";
@@ -473,7 +475,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.3.16;
+				MARKETING_VERSION = 1.3.17;
 				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.Connect;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -490,7 +492,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MARKETING_VERSION = 1.3.16;
+				MARKETING_VERSION = 1.3.17;
 				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.ConnectTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
@@ -508,7 +510,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MARKETING_VERSION = 1.3.16;
+				MARKETING_VERSION = 1.3.17;
 				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.ConnectTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;

@@ -8,6 +8,9 @@ struct ConnectionDetailsView: View {
     var onDelete: () -> Void
     var onShowSnackbar: (String) -> Void = { _ in }
 
+    @State private var showFirstDeleteConfirm = false
+    @State private var showSecondDeleteConfirm = false
+
     init(connectionId: Int64, onEdit: @escaping (Int64) -> Void, onDelete: @escaping () -> Void, onShowSnackbar: @escaping (String) -> Void) {
         _viewModel = StateObject(wrappedValue: ConnectionDetailsViewModel(connectionId: connectionId))
         self.onEdit = onEdit
@@ -38,6 +41,28 @@ struct ConnectionDetailsView: View {
         .onChange(of: viewModel.deleteResult, perform: { r in
             if case .success = r { onDelete(); dismiss() }
         })
+        .alert("Delete connection?", isPresented: $showFirstDeleteConfirm) {
+            Button("Cancel", role: .cancel) { showFirstDeleteConfirm = false }
+            Button("Delete", role: .destructive) {
+                showFirstDeleteConfirm = false
+                showSecondDeleteConfirm = true
+            }
+        } message: {
+            if let name = viewModel.connection?.contactName {
+                Text("Are you sure you want to delete \(name)?")
+            }
+        }
+        .alert("Delete permanently?", isPresented: $showSecondDeleteConfirm) {
+            Button("Cancel", role: .cancel) { showSecondDeleteConfirm = false }
+            Button("Delete", role: .destructive) {
+                showSecondDeleteConfirm = false
+                viewModel.deleteConnection()
+            }
+        } message: {
+            if let name = viewModel.connection?.contactName {
+                Text("This cannot be undone. Permanently delete \(name)?")
+            }
+        }
     }
 
     private func detailsContent(_ conn: ScheduledConnection) -> some View {
@@ -52,27 +77,30 @@ struct ConnectionDetailsView: View {
             }
             Section {
                 if let phone = conn.contactPhoneNumber, !phone.isEmpty {
-                    if conn.preferredMethod == .call || conn.preferredMethod == .both {
-                        Button { ContactHelper.makeCall(phoneNumber: phone) } label: {
+                    if let url = ContactHelper.callURL(phoneNumber: phone) {
+                        Button { ContactHelper.open(url) } label: {
                             Label("Call", systemImage: "phone.fill")
                         }
                     }
-                    if conn.preferredMethod == .message || conn.preferredMethod == .both {
-                        Button { ContactHelper.sendMessage(phoneNumber: phone) } label: {
+                    if let url = ContactHelper.messageURL(phoneNumber: phone) {
+                        Button { ContactHelper.open(url) } label: {
                             Label("Message", systemImage: "message.fill")
                         }
                     }
-                    if conn.preferredMethod == .faceTime {
-                        Button { ContactHelper.faceTimeVideo(phoneNumber: phone) } label: {
+                    if let url = ContactHelper.faceTimeVideoURL(phoneNumber: phone) {
+                        Button { ContactHelper.open(url) } label: {
                             Label("FaceTime", systemImage: "video.fill")
                         }
-                        Button { ContactHelper.faceTimeAudio(phoneNumber: phone) } label: {
-                            Label("FaceTime Audio", systemImage: "phone.badge.waveform")
+                    }
+                    if let url = ContactHelper.faceTimeAudioURL(phoneNumber: phone) {
+                        Button { ContactHelper.open(url) } label: {
+                            Label("FaceTime Audio", systemImage: "video.badge.waveform.fill")
                         }
                     }
                 }
-                if let email = conn.contactEmail, !email.isEmpty {
-                    Button { ContactHelper.sendEmail(email: email) } label: {
+                if let email = conn.contactEmail, !email.isEmpty,
+                   let url = ContactHelper.emailURL(email: email) {
+                    Button { ContactHelper.open(url) } label: {
                         Label("Email", systemImage: "envelope.fill")
                     }
                 }
@@ -112,7 +140,7 @@ struct ConnectionDetailsView: View {
                 }
             }
             Section {
-                Button(role: .destructive, action: { viewModel.deleteConnection() }) {
+                Button(role: .destructive, action: { showFirstDeleteConfirm = true }) {
                     Label("Delete", systemImage: "trash")
                 }
             }

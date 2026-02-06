@@ -4,6 +4,16 @@ Android and iOS share the same version number from **1.3.16** onward. Entries ar
 
 ---
 
+## 1.3.17
+
+- **[iOS]** Card action buttons (Call, Message, FaceTime Video, FaceTime Audio, Email) now open the correct app instead of navigating to details: card uses `onTapGesture` for navigation and `Button { ContactHelper.open(url) }` for actions so taps on icons open Phone/Messages/Mail/FaceTime.
+- **[iOS]** Connection details: Call, Message, Email, and FaceTime (Video + Audio) buttons use `ContactHelper.open(url)` so they open the correct app; FaceTime row is always shown when the connection has a phone number (not only when preferred method is FaceTime).
+- **[iOS]** Double confirm on delete: first alert "Delete connection?", second "Delete permanently? This cannot be undone."
+- **[Android]** Double confirm on delete: second dialog "Delete permanently? This cannot be undone." before deleting.
+- **[iOS]** Card shows email and birthday in the same row format as phone (icon + subheadline text); `ContactHelper.open(_:)` added for programmatic URL opening.
+
+---
+
 ## 1.3.16
 
 - **[iOS]** Snooze indicator on cards: clock icon and "Snoozed" label when a connection is snoozed.

@@ -67,114 +67,129 @@ struct ConnectionRowView: View {
     }
 
     var body: some View {
-        Button(action: onTap) {
-            HStack(alignment: .top, spacing: 0) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(statusColor)
-                    .frame(width: 4)
-                    .padding(.leading, 0)
-                VStack(alignment: .leading, spacing: Dimensions.xsmall) {
-                    HStack {
-                        avatarView
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(connection.contactName)
-                                .font(.headline)
-                                .foregroundColor(textColor)
-                        }
-                        Spacer(minLength: 0)
+        HStack(alignment: .top, spacing: 0) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(statusColor)
+                .frame(width: 4)
+                .padding(.leading, 0)
+            VStack(alignment: .leading, spacing: Dimensions.xsmall) {
+                HStack {
+                    avatarView
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(connection.contactName)
+                            .font(.headline)
+                            .foregroundColor(textColor)
                     }
-                    if let phone = connection.contactPhoneNumber, !phone.isEmpty {
-                        HStack(spacing: 4) {
-                            Image(systemName: "phone.fill")
-                                .font(.caption)
-                            Text(PhoneNumberFormatter.format(phone))
-                                .font(.subheadline)
-                        }
-                        .foregroundColor(isDark ? ConnectColors.onCardDark.opacity(0.8) : Color.secondary)
-                    }
-                    if let bday = connection.birthday {
-                        HStack(spacing: 4) {
-                            Image(systemName: "gift")
-                                .font(.caption)
-                            Text(birthdayDisplay(bday))
-                                .font(.caption)
-                        }
-                        .foregroundColor(isDark ? ConnectColors.onCardDark.opacity(0.8) : Color.secondary)
-                    }
-                    if connection.contactPhoneNumber != nil || connection.contactEmail != nil {
-                        HStack(spacing: Dimensions.small) {
-                            if let phone = connection.contactPhoneNumber, !phone.isEmpty {
-                                Button { ContactHelper.makeCall(phoneNumber: phone) } label: {
+                    Spacer(minLength: 0)
+                }
+                if let phone = connection.contactPhoneNumber, !phone.isEmpty {
+                    dataRow(icon: "phone.fill", text: PhoneNumberFormatter.format(phone))
+                }
+                if let email = connection.contactEmail, !email.isEmpty {
+                    dataRow(icon: "envelope.fill", text: email)
+                }
+                if let bday = connection.birthday {
+                    dataRow(icon: "gift", text: birthdayDisplay(bday))
+                }
+                if connection.contactPhoneNumber != nil || connection.contactEmail != nil {
+                    HStack(spacing: Dimensions.small) {
+                        if let phone = connection.contactPhoneNumber, !phone.isEmpty {
+                            if let url = ContactHelper.callURL(phoneNumber: phone) {
+                                Button { ContactHelper.open(url) } label: {
                                     Image(systemName: "phone.fill")
                                         .font(.system(size: Dimensions.iconSmall))
                                 }
                                 .buttonStyle(.borderless)
-                                Button { ContactHelper.sendMessage(phoneNumber: phone) } label: {
+                                .accessibilityLabel("Call")
+                            }
+                            if let url = ContactHelper.messageURL(phoneNumber: phone) {
+                                Button { ContactHelper.open(url) } label: {
                                     Image(systemName: "message.fill")
                                         .font(.system(size: Dimensions.iconSmall))
                                 }
                                 .buttonStyle(.borderless)
-                                Button { ContactHelper.faceTimeVideo(phoneNumber: phone) } label: {
+                                .accessibilityLabel("Message")
+                            }
+                            if let url = ContactHelper.faceTimeVideoURL(phoneNumber: phone) {
+                                Button { ContactHelper.open(url) } label: {
                                     Image(systemName: "video.fill")
                                         .font(.system(size: Dimensions.iconSmall))
                                 }
                                 .buttonStyle(.borderless)
-                                Button { ContactHelper.faceTimeAudio(phoneNumber: phone) } label: {
-                                    Image(systemName: "phone.badge.waveform")
+                                .accessibilityLabel("FaceTime Video")
+                            }
+                            if let url = ContactHelper.faceTimeAudioURL(phoneNumber: phone) {
+                                Button { ContactHelper.open(url) } label: {
+                                    Image(systemName: "video.badge.waveform.fill")
                                         .font(.system(size: Dimensions.iconSmall))
                                 }
                                 .buttonStyle(.borderless)
-                            }
-                            if let email = connection.contactEmail, !email.isEmpty {
-                                Button { ContactHelper.sendEmail(email: email) } label: {
-                                    Image(systemName: "envelope.fill")
-                                        .font(.system(size: Dimensions.iconSmall))
-                                }
-                                .buttonStyle(.borderless)
+                                .accessibilityLabel("FaceTime Audio")
                             }
                         }
-                        .tint(ConnectColors.primary)
-                    }
-                    lastContactedRow
-                    HStack(spacing: Dimensions.medium) {
-                        HStack(spacing: Dimensions.xsmall) {
-                            Text("Next: \(formatDate(connection.nextReminderDate))")
-                                .font(.caption)
-                                .foregroundColor(isDark ? ConnectColors.onCardDark.opacity(0.8) : Color.secondary)
-                            if isSnoozed {
-                                Image(systemName: "clock.arrow.circlepath")
-                                    .font(.caption)
-                                Text("Snoozed")
-                                    .font(.caption)
-                            }
-                        }
-                        .foregroundColor(isDark ? ConnectColors.onCardDark.opacity(0.8) : Color.secondary)
-                        Spacer()
-                        if connection.isDueToday || colorCategory == .green {
-                            Button(action: onSnooze) {
-                                Image(systemName: "clock.arrow.circlepath")
+                        if let email = connection.contactEmail, !email.isEmpty,
+                           let url = ContactHelper.emailURL(email: email) {
+                            Button { ContactHelper.open(url) } label: {
+                                Image(systemName: "envelope.fill")
                                     .font(.system(size: Dimensions.iconSmall))
                             }
                             .buttonStyle(.borderless)
-                            Button(action: onMarkComplete) {
-                                Image(systemName: "checkmark.circle")
-                                    .font(.system(size: Dimensions.iconSmall))
-                            }
-                            .buttonStyle(.borderless)
+                            .accessibilityLabel("Email")
                         }
                     }
                     .tint(ConnectColors.primary)
                 }
-                .padding(Dimensions.cardPadding)
+                lastContactedRow
+                HStack(spacing: Dimensions.medium) {
+                    HStack(spacing: Dimensions.xsmall) {
+                        Text("Next: \(formatDate(connection.nextReminderDate))")
+                            .font(.caption)
+                            .foregroundColor(isDark ? ConnectColors.onCardDark.opacity(0.8) : Color.secondary)
+                        if isSnoozed {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.caption)
+                            Text("Snoozed")
+                                .font(.caption)
+                        }
+                    }
+                    .foregroundColor(isDark ? ConnectColors.onCardDark.opacity(0.8) : Color.secondary)
+                    Spacer()
+                    if connection.isDueToday || colorCategory == .green {
+                        Button(action: onSnooze) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.system(size: Dimensions.iconSmall))
+                        }
+                        .buttonStyle(.borderless)
+                        Button(action: onMarkComplete) {
+                            Image(systemName: "checkmark.circle")
+                                .font(.system(size: Dimensions.iconSmall))
+                        }
+                        .buttonStyle(.borderless)
+                    }
+                }
+                .tint(ConnectColors.primary)
             }
-            .background(cardBackground)
-            .overlay(
-                RoundedRectangle(cornerRadius: Dimensions.radiusMedium)
-                    .strokeBorder(cardBorder, lineWidth: Dimensions.borderThin)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Dimensions.radiusMedium))
+            .padding(Dimensions.cardPadding)
         }
-        .buttonStyle(.plain)
+        .background(cardBackground)
+        .overlay(
+            RoundedRectangle(cornerRadius: Dimensions.radiusMedium)
+                .strokeBorder(cardBorder, lineWidth: Dimensions.borderThin)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: Dimensions.radiusMedium))
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
+    }
+
+    @ViewBuilder
+    private func dataRow(icon: String, text: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.caption)
+            Text(text)
+                .font(.subheadline)
+        }
+        .foregroundColor(isDark ? ConnectColors.onCardDark.opacity(0.8) : Color.secondary)
     }
 
     /// Dedicated row for "Last contacted" on the card (matches Android ConnectionItemMetadata).

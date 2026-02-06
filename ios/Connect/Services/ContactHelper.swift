@@ -7,39 +7,52 @@ enum ContactHelper {
         phone.filter { $0.isNumber || $0 == "+" }
     }
 
-    static func makeCall(phoneNumber: String) {
+    /// URL for Phone app (call). Use with Link or UIApplication.shared.open.
+    static func callURL(phoneNumber: String) -> URL? {
         let cleaned = cleanPhone(phoneNumber)
-        guard let url = URL(string: "tel:\(cleaned.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? cleaned)"),
-              UIApplication.shared.canOpenURL(url) else { return }
-        UIApplication.shared.open(url)
+        guard !cleaned.isEmpty else { return nil }
+        return URL(string: "tel:\(cleaned)")
     }
 
-    static func sendMessage(phoneNumber: String, body: String = "") {
+    /// URL for Messages app. Use with Link or UIApplication.shared.open.
+    static func messageURL(phoneNumber: String, body: String = "") -> URL? {
         let cleaned = cleanPhone(phoneNumber)
-        guard let url = URL(string: "sms:\(cleaned)&body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")"),
-              UIApplication.shared.canOpenURL(url) else { return }
-        UIApplication.shared.open(url)
+        guard !cleaned.isEmpty else { return nil }
+        if body.isEmpty {
+            return URL(string: "sms:\(cleaned)")
+        }
+        let encoded = body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? body
+        return URL(string: "sms:\(cleaned);body=\(encoded)")
     }
 
-    static func sendEmail(email: String, subject: String = "", body: String = "") {
-        var components = URLComponents(string: "mailto:\(email.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? email)")
-        var queryItems: [URLQueryItem] = []
-        if !subject.isEmpty { queryItems.append(URLQueryItem(name: "subject", value: subject)) }
-        if !body.isEmpty { queryItems.append(URLQueryItem(name: "body", value: body)) }
-        if !queryItems.isEmpty { components?.queryItems = queryItems }
-        guard let url = components?.url, UIApplication.shared.canOpenURL(url) else { return }
-        UIApplication.shared.open(url)
+    /// URL for default Mail app (mailto:). Use with Link or UIApplication.shared.open.
+    static func emailURL(email: String, subject: String = "", body: String = "") -> URL? {
+        let trimmed = email.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, trimmed.contains("@") else { return nil }
+        var urlString = "mailto:\(trimmed.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? trimmed)"
+        var query: [String] = []
+        if !subject.isEmpty { query.append("subject=\(subject.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? subject)") }
+        if !body.isEmpty { query.append("body=\(body.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? body)") }
+        if !query.isEmpty { urlString += "?" + query.joined(separator: "&") }
+        return URL(string: urlString)
     }
 
-    static func faceTimeAudio(phoneNumber: String) {
+    /// URL for FaceTime audio. Use with Link or UIApplication.shared.open.
+    static func faceTimeAudioURL(phoneNumber: String) -> URL? {
         let cleaned = cleanPhone(phoneNumber)
-        guard let url = URL(string: "facetime-audio:\(cleaned)") else { return }
-        UIApplication.shared.open(url)
+        guard !cleaned.isEmpty else { return nil }
+        return URL(string: "facetime-audio:\(cleaned)")
     }
 
-    static func faceTimeVideo(phoneNumber: String) {
+    /// URL for FaceTime video. Use with Link or UIApplication.shared.open.
+    static func faceTimeVideoURL(phoneNumber: String) -> URL? {
         let cleaned = cleanPhone(phoneNumber)
-        guard let url = URL(string: "facetime:\(cleaned)") else { return }
+        guard !cleaned.isEmpty else { return nil }
+        return URL(string: "facetime:\(cleaned)")
+    }
+
+    /// Open a URL (tel, sms, mailto, facetime). Use from Button action when Link inside a Button doesn’t receive taps.
+    static func open(_ url: URL) {
         UIApplication.shared.open(url)
     }
 

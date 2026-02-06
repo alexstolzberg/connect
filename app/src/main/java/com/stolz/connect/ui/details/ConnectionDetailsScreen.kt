@@ -74,6 +74,7 @@ fun ConnectionDetailsScreen(
     }
     
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showSecondDeleteDialog by remember { mutableStateOf(false) }
     var phoneNumberToCall by remember { mutableStateOf<String?>(null) }
     
     val callPermissionLauncher = rememberLauncherForActivityResult(
@@ -440,15 +441,21 @@ fun ConnectionDetailsScreen(
     }
     
     if (showDeleteDialog) {
+        val connection = viewModel.connection
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Connection") },
-            text = { Text("Are you sure you want to delete this connection?") },
+            title = { Text("Delete connection?") },
+            text = {
+                Text(
+                    if (connection != null) "Are you sure you want to delete ${connection.contactName}?"
+                    else "Are you sure you want to delete this connection?"
+                )
+            },
             confirmButton = {
                 ConnectTextButton(
                     onClick = {
-                        viewModel.deleteConnection()
                         showDeleteDialog = false
+                        showSecondDeleteDialog = true
                     }
                 ) {
                     Text("Delete", color = MaterialTheme.colorScheme.error)
@@ -456,6 +463,34 @@ fun ConnectionDetailsScreen(
             },
             dismissButton = {
                 ConnectTextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+    if (showSecondDeleteDialog) {
+        val connection = viewModel.connection
+        AlertDialog(
+            onDismissRequest = { showSecondDeleteDialog = false },
+            title = { Text("Delete permanently?") },
+            text = {
+                Text(
+                    if (connection != null) "This cannot be undone. Permanently delete ${connection.contactName}?"
+                    else "This cannot be undone. Permanently delete this connection?"
+                )
+            },
+            confirmButton = {
+                ConnectTextButton(
+                    onClick = {
+                        viewModel.deleteConnection()
+                        showSecondDeleteDialog = false
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                ConnectTextButton(onClick = { showSecondDeleteDialog = false }) {
                     Text("Cancel")
                 }
             }

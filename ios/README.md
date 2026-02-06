@@ -34,5 +34,5 @@ iOS version of Connect — full port of the Android app in the same repo.
 
 ## Version
 
-- **Marketing version:** 1.3.16 (in Xcode project build settings)
+- **Marketing version:** 1.3.17 (in Xcode project build settings)
 - Aligned with Android `versionName` in root [app/build.gradle.kts](../app/build.gradle.kts). Keep both in sync when releasing.
