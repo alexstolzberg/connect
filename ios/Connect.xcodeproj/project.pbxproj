@@ -1,0 +1,554 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A10000000000000000000001 /* ConnectApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* ConnectApp.swift */; };
+		A10000000000000000000003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000004 /* ContentView.swift */; };
+		A10000000000000000000005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* Assets.xcassets */; };
+		A20000000000000000000001 /* ScheduledConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000002 /* ScheduledConnection.swift */; };
+		A20000000000000000000003 /* ThemeMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000004 /* ThemeMode.swift */; };
+		A20000000000000000000005 /* TimeFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000006 /* TimeFormatter.swift */; };
+		A20000000000000000000007 /* ValidationUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000008 /* ValidationUtils.swift */; };
+		A20000000000000000000009 /* ConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000A /* ConnectionStore.swift */; };
+		A2000000000000000000000B /* Preferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000C /* Preferences.swift */; };
+		A2000000000000000000000D /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000000E /* NotificationService.swift */; };
+		A2000000000000000000000F /* ContactHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000010 /* ContactHelper.swift */; };
+		A20000000000000000000011 /* HomeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000012 /* HomeViewModel.swift */; };
+		A20000000000000000000013 /* AddEditViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000014 /* AddEditViewModel.swift */; };
+		A20000000000000000000015 /* ConnectionDetailsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000016 /* ConnectionDetailsViewModel.swift */; };
+		A20000000000000000000017 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000018 /* SettingsViewModel.swift */; };
+		A20000000000000000000019 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001A /* DesignSystem.swift */; };
+		A2000000000000000000001B /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001C /* SplashView.swift */; };
+		A2000000000000000000001D /* ConnectionRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000001E /* ConnectionRowView.swift */; };
+		A2000000000000000000001F /* InboxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000020 /* InboxView.swift */; };
+		A20000000000000000000021 /* AllView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000022 /* AllView.swift */; };
+		A20000000000000000000023 /* SnoozeSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000024 /* SnoozeSheetView.swift */; };
+		A20000000000000000000025 /* AddEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000026 /* AddEditView.swift */; };
+		A20000000000000000000027 /* ConnectionDetailsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000028 /* ConnectionDetailsView.swift */; };
+		A20000000000000000000029 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002A /* SettingsView.swift */; };
+		A2000000000000000000002B /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002C /* AboutView.swift */; };
+		A2000000000000000000002D /* MainTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000000000000000000002E /* MainTabView.swift */; };
+		A2000000000000000000002F /* ContactPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000030 /* ContactPickerView.swift */; };
+		A20000000000000000000031 /* PhoneNumberFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000032 /* PhoneNumberFormatter.swift */; };
+		A20000000000000000000033 /* ReminderTimeHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000034 /* ReminderTimeHelper.swift */; };
+		A20000000000000000000035 /* PhotoStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000036 /* PhotoStorage.swift */; };
+		A20000000000000000000037 /* CameraPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000000000000000000038 /* CameraPickerView.swift */; };
+		B10000000000000000000001 /* ConnectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* ConnectTests.swift */; };
+		B10000000000000000000008 /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000009 /* XCTest.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A10000000000000000000007 /* Connect.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Connect.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000002 /* ConnectApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectApp.swift; sourceTree = "<group>"; };
+		A10000000000000000000004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A10000000000000000000006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A20000000000000000000002 /* ScheduledConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/ScheduledConnection.swift"; sourceTree = "<group>"; };
+		A20000000000000000000004 /* ThemeMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Models/ThemeMode.swift"; sourceTree = "<group>"; };
+		A20000000000000000000006 /* TimeFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utils/TimeFormatter.swift"; sourceTree = "<group>"; };
+		A20000000000000000000008 /* ValidationUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utils/ValidationUtils.swift"; sourceTree = "<group>"; };
+		A2000000000000000000000A /* ConnectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Persistence/ConnectionStore.swift"; sourceTree = "<group>"; };
+		A2000000000000000000000C /* Preferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Persistence/Preferences.swift"; sourceTree = "<group>"; };
+		A2000000000000000000000E /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/NotificationService.swift"; sourceTree = "<group>"; };
+		A20000000000000000000010 /* ContactHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Services/ContactHelper.swift"; sourceTree = "<group>"; };
+		A20000000000000000000012 /* HomeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/HomeViewModel.swift"; sourceTree = "<group>"; };
+		A20000000000000000000014 /* AddEditViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/AddEditViewModel.swift"; sourceTree = "<group>"; };
+		A20000000000000000000016 /* ConnectionDetailsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/ConnectionDetailsViewModel.swift"; sourceTree = "<group>"; };
+		A20000000000000000000018 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ViewModels/SettingsViewModel.swift"; sourceTree = "<group>"; };
+		A2000000000000000000001A /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Theme/DesignSystem.swift"; sourceTree = "<group>"; };
+		A2000000000000000000001C /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/SplashView.swift"; sourceTree = "<group>"; };
+		A2000000000000000000001E /* ConnectionRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/ConnectionRowView.swift"; sourceTree = "<group>"; };
+		A20000000000000000000020 /* InboxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/InboxView.swift"; sourceTree = "<group>"; };
+		A20000000000000000000022 /* AllView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/AllView.swift"; sourceTree = "<group>"; };
+		A20000000000000000000024 /* SnoozeSheetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/SnoozeSheetView.swift"; sourceTree = "<group>"; };
+		A20000000000000000000026 /* AddEditView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/AddEditView.swift"; sourceTree = "<group>"; };
+		A20000000000000000000028 /* ConnectionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/ConnectionDetailsView.swift"; sourceTree = "<group>"; };
+		A2000000000000000000002A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/SettingsView.swift"; sourceTree = "<group>"; };
+		A2000000000000000000002C /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/AboutView.swift"; sourceTree = "<group>"; };
+		A2000000000000000000002E /* MainTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/MainTabView.swift"; sourceTree = "<group>"; };
+		A20000000000000000000030 /* ContactPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/ContactPickerView.swift"; sourceTree = "<group>"; };
+		A20000000000000000000032 /* PhoneNumberFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utils/PhoneNumberFormatter.swift"; sourceTree = "<group>"; };
+		A20000000000000000000034 /* ReminderTimeHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utils/ReminderTimeHelper.swift"; sourceTree = "<group>"; };
+		A20000000000000000000036 /* PhotoStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Utils/PhotoStorage.swift"; sourceTree = "<group>"; };
+		A20000000000000000000038 /* CameraPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Views/CameraPickerView.swift"; sourceTree = "<group>"; };
+		B10000000000000000000002 /* ConnectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectTests.swift; sourceTree = "<group>"; };
+		B10000000000000000000003 /* ConnectTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ConnectTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B10000000000000000000009 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Developer/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A10000000000000000000008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A10000000000000000000009 /* Connect */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000002 /* ConnectApp.swift */,
+				A10000000000000000000004 /* ContentView.swift */,
+				A20000000000000000000002 /* ScheduledConnection.swift */,
+				A20000000000000000000004 /* ThemeMode.swift */,
+				A20000000000000000000006 /* TimeFormatter.swift */,
+				A20000000000000000000032 /* PhoneNumberFormatter.swift */,
+				A20000000000000000000034 /* ReminderTimeHelper.swift */,
+				A20000000000000000000036 /* PhotoStorage.swift */,
+				A20000000000000000000008 /* ValidationUtils.swift */,
+				A2000000000000000000000A /* ConnectionStore.swift */,
+				A2000000000000000000000C /* Preferences.swift */,
+				A2000000000000000000000E /* NotificationService.swift */,
+				A20000000000000000000010 /* ContactHelper.swift */,
+				A20000000000000000000012 /* HomeViewModel.swift */,
+				A20000000000000000000014 /* AddEditViewModel.swift */,
+				A20000000000000000000016 /* ConnectionDetailsViewModel.swift */,
+				A20000000000000000000018 /* SettingsViewModel.swift */,
+				A2000000000000000000001A /* DesignSystem.swift */,
+				A2000000000000000000001C /* SplashView.swift */,
+				A2000000000000000000001E /* ConnectionRowView.swift */,
+				A20000000000000000000020 /* InboxView.swift */,
+				A20000000000000000000022 /* AllView.swift */,
+				A20000000000000000000024 /* SnoozeSheetView.swift */,
+				A20000000000000000000038 /* CameraPickerView.swift */,
+				A20000000000000000000026 /* AddEditView.swift */,
+				A20000000000000000000028 /* ConnectionDetailsView.swift */,
+				A2000000000000000000002A /* SettingsView.swift */,
+				A2000000000000000000002C /* AboutView.swift */,
+				A2000000000000000000002E /* MainTabView.swift */,
+				A20000000000000000000030 /* ContactPickerView.swift */,
+				A10000000000000000000006 /* Assets.xcassets */,
+			);
+			path = Connect;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000000A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000007 /* Connect.app */,
+				B10000000000000000000003 /* ConnectTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000011 /* Main group */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000009 /* Connect */,
+				B10000000000000000000004 /* ConnectTests */,
+				A1000000000000000000000A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B10000000000000000000004 /* ConnectTests */ = {
+			isa = PBXGroup;
+			children = (
+				B10000000000000000000002 /* ConnectTests.swift */,
+			);
+			path = ConnectTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1000000000000000000000B /* Connect */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000000000000000000000C /* Build configuration list for PBXNativeTarget "Connect" */;
+			buildPhases = (
+				A1000000000000000000000D /* Sources */,
+				A10000000000000000000008 /* Frameworks */,
+				A1000000000000000000000E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Connect;
+			productName = Connect;
+			productReference = A10000000000000000000007 /* Connect.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B10000000000000000000005 /* ConnectTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B1000000000000000000000B /* Build configuration list for PBXNativeTarget "ConnectTests" */;
+			buildPhases = (
+				B10000000000000000000006 /* Sources */,
+				B10000000000000000000007 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B1000000000000000000000A /* PBXTargetDependency */,
+			);
+			name = ConnectTests;
+			productName = ConnectTests;
+			productReference = B10000000000000000000003 /* ConnectTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1000000000000000000000F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = A10000000000000000000010 /* Build configuration list for PBXProject "Connect" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A10000000000000000000011;
+			productRefGroup = A1000000000000000000000A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1000000000000000000000B /* Connect */,
+				B10000000000000000000005 /* ConnectTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1000000000000000000000E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000005 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B10000000000000000000006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000001 /* ConnectTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B10000000000000000000007 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10000000000000000000008 /* XCTest.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A1000000000000000000000D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000001 /* ConnectApp.swift in Sources */,
+				A10000000000000000000003 /* ContentView.swift in Sources */,
+				A20000000000000000000001 /* ScheduledConnection.swift in Sources */,
+				A20000000000000000000003 /* ThemeMode.swift in Sources */,
+				A20000000000000000000005 /* TimeFormatter.swift in Sources */,
+				A20000000000000000000007 /* ValidationUtils.swift in Sources */,
+				A20000000000000000000009 /* ConnectionStore.swift in Sources */,
+				A2000000000000000000000B /* Preferences.swift in Sources */,
+				A2000000000000000000000D /* NotificationService.swift in Sources */,
+				A2000000000000000000000F /* ContactHelper.swift in Sources */,
+				A20000000000000000000011 /* HomeViewModel.swift in Sources */,
+				A20000000000000000000013 /* AddEditViewModel.swift in Sources */,
+				A20000000000000000000015 /* ConnectionDetailsViewModel.swift in Sources */,
+				A20000000000000000000017 /* SettingsViewModel.swift in Sources */,
+				A20000000000000000000019 /* DesignSystem.swift in Sources */,
+				A2000000000000000000001B /* SplashView.swift in Sources */,
+				A2000000000000000000001D /* ConnectionRowView.swift in Sources */,
+				A2000000000000000000001F /* InboxView.swift in Sources */,
+				A20000000000000000000021 /* AllView.swift in Sources */,
+				A20000000000000000000023 /* SnoozeSheetView.swift in Sources */,
+				A20000000000000000000025 /* AddEditView.swift in Sources */,
+				A20000000000000000000027 /* ConnectionDetailsView.swift in Sources */,
+				A20000000000000000000029 /* SettingsView.swift in Sources */,
+				A2000000000000000000002B /* AboutView.swift in Sources */,
+				A2000000000000000000002D /* MainTabView.swift in Sources */,
+				A2000000000000000000002F /* ContactPickerView.swift in Sources */,
+				A20000000000000000000031 /* PhoneNumberFormatter.swift in Sources */,
+				A20000000000000000000033 /* ReminderTimeHelper.swift in Sources */,
+				A20000000000000000000035 /* PhotoStorage.swift in Sources */,
+				A20000000000000000000037 /* CameraPickerView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B1000000000000000000000A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1000000000000000000000B /* Connect */;
+			targetProxy = B1000000000000000000000F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		B1000000000000000000000F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1000000000000000000000F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1000000000000000000000B;
+			remoteInfo = Connect;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin XCBuildConfiguration section */
+		A10000000000000000000012 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A10000000000000000000013 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A10000000000000000000014 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Connect uses the camera to take a photo for the connection.";
+				INFOPLIST_KEY_NSContactsUsageDescription = "Connect uses your contacts so you can add reminders for people you know.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Connect uses the photo library to choose a photo for the connection.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.3.16;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.Connect;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A10000000000000000000015 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Connect uses the camera to take a photo for the connection.";
+				INFOPLIST_KEY_NSContactsUsageDescription = "Connect uses your contacts so you can add reminders for people you know.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Connect uses the photo library to choose a photo for the connection.";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.3.16;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.Connect;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B1000000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.3.16;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.ConnectTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Connect.app/Connect";
+			};
+			name = Debug;
+		};
+		B1000000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 1.3.16;
+				PRODUCT_BUNDLE_IDENTIFIER = com.stolz.ConnectTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Connect.app/Connect";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B1000000000000000000000B /* Build configuration list for PBXNativeTarget "ConnectTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B1000000000000000000000C /* Debug */,
+				B1000000000000000000000D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000000000000000000000C /* Build configuration list for PBXNativeTarget "Connect" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000014 /* Debug */,
+				A10000000000000000000015 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000010 /* Build configuration list for PBXProject "Connect" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A10000000000000000000012 /* Debug */,
+				A10000000000000000000013 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1000000000000000000000F /* Project object */;
+}

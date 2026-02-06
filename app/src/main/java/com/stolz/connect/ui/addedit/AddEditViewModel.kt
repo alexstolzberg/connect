@@ -86,6 +86,7 @@ class AddEditViewModel @Inject constructor(
                     promptOnBirthday = it.promptOnBirthday,
                     nextReminderDate = it.nextReminderDate
                 )
+                ensurePreferredMethodValid()
             }
         }
     }
@@ -97,11 +98,13 @@ class AddEditViewModel @Inject constructor(
     fun updateContactPhoneNumber(phone: String?) {
         val cleaned = phone?.takeIf { it.isNotBlank() }
         _uiState.value = _uiState.value.copy(contactPhoneNumber = cleaned)
+        ensurePreferredMethodValid()
     }
     
     fun updateContactEmail(email: String?) {
         val cleaned = email?.takeIf { it.isNotBlank() }
         _uiState.value = _uiState.value.copy(contactEmail = cleaned)
+        ensurePreferredMethodValid()
     }
     
     fun updateContactPhotoUri(photoUri: String?) {
@@ -132,6 +135,26 @@ class AddEditViewModel @Inject constructor(
     
     fun updatePreferredMethod(method: ConnectionMethod) {
         _uiState.value = _uiState.value.copy(preferredMethod = method)
+    }
+
+    /** If current preferred method is invalid (e.g. Email but no email), reset to a valid choice. */
+    private fun ensurePreferredMethodValid() {
+        val state = _uiState.value
+        val hasPhone = !state.contactPhoneNumber.isNullOrBlank()
+        val hasEmail = !state.contactEmail.isNullOrBlank()
+        val valid = when (state.preferredMethod) {
+            ConnectionMethod.CALL, ConnectionMethod.MESSAGE -> hasPhone
+            ConnectionMethod.EMAIL -> hasEmail
+            ConnectionMethod.BOTH -> hasPhone || hasEmail
+        }
+        if (!valid) {
+            val newMethod = when {
+                hasPhone -> ConnectionMethod.CALL
+                hasEmail -> ConnectionMethod.EMAIL
+                else -> ConnectionMethod.BOTH
+            }
+            _uiState.value = state.copy(preferredMethod = newMethod)
+        }
     }
     
     fun updateReminderTime(time: String?) {
