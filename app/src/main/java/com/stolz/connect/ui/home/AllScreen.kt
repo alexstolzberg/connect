@@ -14,13 +14,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -52,6 +54,7 @@ fun AllScreen(
     val allSortOrder by viewModel.allSortOrder.collectAsState()
     var sortMenuExpanded by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     var searchActive by remember { mutableStateOf(false) }
     val searchFocusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -131,7 +134,7 @@ fun AllScreen(
                 actions = {
                     IconButton(onClick = { sortMenuExpanded = true }) {
                         Icon(
-                            imageVector = Icons.Default.Sort,
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
                             contentDescription = "Sort by"
                         )
                     }
@@ -142,6 +145,7 @@ fun AllScreen(
                         DropdownMenuItem(
                             text = { Text("A–Z") },
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 viewModel.setAllSortOrder(AllSortOrder.A_Z)
                                 sortMenuExpanded = false
                             },
@@ -158,6 +162,7 @@ fun AllScreen(
                         DropdownMenuItem(
                             text = { Text("Date (soonest first)") },
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 viewModel.setAllSortOrder(AllSortOrder.DATE_ASCENDING)
                                 sortMenuExpanded = false
                             },
@@ -174,6 +179,7 @@ fun AllScreen(
                         DropdownMenuItem(
                             text = { Text("Date (latest first)") },
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 viewModel.setAllSortOrder(AllSortOrder.DATE_DESCENDING)
                                 sortMenuExpanded = false
                             },

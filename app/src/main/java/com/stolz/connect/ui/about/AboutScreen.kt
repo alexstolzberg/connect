@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -27,7 +27,7 @@ fun AboutScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -83,7 +83,7 @@ fun AboutScreen(
                 }
             }
             
-            Divider()
+            HorizontalDivider()
             
             // Purpose Section
             Text(
@@ -128,7 +128,7 @@ fun AboutScreen(
                 )
             }
             
-            Divider()
+            HorizontalDivider()
             
             // Color Coding Section
             Text(
@@ -157,7 +157,7 @@ fun AboutScreen(
                 description = "Overdue by more than one reminder period (e.g., more than 14 days for weekly reminders) or never contacted"
             )
             
-            Divider()
+            HorizontalDivider()
             
             // Features Section
             Text(

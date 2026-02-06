@@ -8,6 +8,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import com.stolz.connect.ui.theme.Dimensions
 import java.util.Calendar
@@ -21,7 +23,8 @@ fun SnoozeBottomSheet(
     modifier: Modifier = Modifier
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
-    
+    val haptic = LocalHapticFeedback.current
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         modifier = modifier
@@ -42,54 +45,47 @@ fun SnoozeBottomSheet(
             SnoozeOption(
                 label = "1 day",
                 onClick = {
-                    val calendar = Calendar.getInstance().apply {
-                        add(Calendar.DAY_OF_MONTH, 1)
-                    }
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    val calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, 1) }
                     onSnoozeSelected(calendar.time)
                     onDismiss()
                 }
             )
-            
             SnoozeOption(
                 label = "2 days",
                 onClick = {
-                    val calendar = Calendar.getInstance().apply {
-                        add(Calendar.DAY_OF_MONTH, 2)
-                    }
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    val calendar = Calendar.getInstance().apply { add(Calendar.DAY_OF_MONTH, 2) }
                     onSnoozeSelected(calendar.time)
                     onDismiss()
                 }
             )
-            
             SnoozeOption(
                 label = "1 week",
                 onClick = {
-                    val calendar = Calendar.getInstance().apply {
-                        add(Calendar.WEEK_OF_YEAR, 1)
-                    }
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    val calendar = Calendar.getInstance().apply { add(Calendar.WEEK_OF_YEAR, 1) }
                     onSnoozeSelected(calendar.time)
                     onDismiss()
                 }
             )
-            
             SnoozeOption(
                 label = "1 month",
                 onClick = {
-                    val calendar = Calendar.getInstance().apply {
-                        add(Calendar.MONTH, 1)
-                    }
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    val calendar = Calendar.getInstance().apply { add(Calendar.MONTH, 1) }
                     onSnoozeSelected(calendar.time)
                     onDismiss()
                 }
             )
-            
-            Divider(modifier = Modifier.padding(vertical = Dimensions.small))
-            
-            // Custom date picker option
+            HorizontalDivider(modifier = Modifier.padding(vertical = Dimensions.small))
             SnoozeOption(
                 label = "Pick a date",
                 icon = Icons.Default.DateRange,
-                onClick = { showDatePicker = true }
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    showDatePicker = true
+                }
             )
             
             Spacer(modifier = Modifier.height(Dimensions.medium))

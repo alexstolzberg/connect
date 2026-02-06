@@ -72,6 +72,9 @@ The app requires the following permissions:
 - 🃏 **Connection cards**: Status bar on the left (green/yellow/red); Snooze and Mark-complete actions in a bottom row (no overlap with name); Next/Last reminder and Last contacted aligned with other rows using same label/value pattern
 - 📋 **All pane sort**: Sort by A–Z, Date (soonest first), or Date (latest first); choice remembered across sessions (Sort icon in All screen app bar)
 - 📐 **Data row spacing**: Consistent spacing between data rows (Phone, Email, Birthday, Notes, Next/Last) and between label and value for easier reading
+- 📳 **Haptic feedback**: Light vibration on key actions (mark complete, snooze, sort options, tab switch, FAB, Mark as Contacted)
+- 📍 **Snackbars**: Anchored at bottom of screen (above nav bar when visible) instead of center
+- 🧹 **Deprecations**: Replaced `Divider` with `HorizontalDivider`; use AutoMirrored icons (ArrowBack, Send, List, Sort) where applicable
 
 ### Version 1.3.14
 - 🏷️ Connection details: Non-clickable pill shows "From contacts" or "Manually added" (View Contact / Search / Add actions removed)

@@ -7,6 +7,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Snooze
@@ -14,6 +15,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -186,6 +189,7 @@ fun ConnectionItem(
     }
 
     val actionTint = if (isDarkTheme) ConnectionColors.OnCardDark else MaterialTheme.colorScheme.primary
+    val haptic = LocalHapticFeedback.current
 
     ConnectCard(
         modifier = Modifier
@@ -234,7 +238,10 @@ fun ConnectionItem(
             ) {
                 if (onSnoozeClick != null) {
                     IconButton(
-                        onClick = onSnoozeClick,
+                        onClick = {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onSnoozeClick()
+                        },
                         modifier = Modifier.size(Dimensions.iconButtonSize),
                         colors = IconButtonDefaults.iconButtonColors(contentColor = actionTint)
                     ) {
@@ -246,7 +253,10 @@ fun ConnectionItem(
                     }
                 }
                 IconButton(
-                    onClick = animationState.handleMarkComplete,
+                    onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        animationState.handleMarkComplete()
+                    },
                     modifier = Modifier
                         .size(Dimensions.iconButtonSize)
                         .scale(animationState.checkmarkScaleAnim),
@@ -352,7 +362,7 @@ private fun ConnectionItemContent(
             ) {
                 phoneActions.add(
                     DataRowAction(
-                        icon = Icons.Default.Send,
+                        icon = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "Message",
                         onClick = onMessageClick
                     )

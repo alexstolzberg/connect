@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,7 +19,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import com.stolz.connect.ui.theme.Dimensions
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
@@ -45,6 +47,7 @@ fun MainScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val haptic = LocalHapticFeedback.current
     val showSnackbar: (String) -> Unit = { message ->
         scope.launch {
             snackbarHostState.showSnackbar(message)
@@ -103,14 +106,14 @@ fun MainScreen(
     
     Scaffold(
         snackbarHost = {
-            Box(Modifier.fillMaxSize()) {
-                val bottomPadding = if (currentDestination?.route == Screen.Inbox.route ||
-                    currentDestination?.route == Screen.All.route ||
-                    currentDestination?.route == Screen.Settings.route) Dimensions.snackbarBottomOffset else Dimensions.medium
+            val bottomPadding = if (currentDestination?.route == Screen.Inbox.route ||
+                currentDestination?.route == Screen.All.route ||
+                currentDestination?.route == Screen.Settings.route) Dimensions.snackbarBottomOffset else Dimensions.medium
+            Column(Modifier.fillMaxSize()) {
+                Spacer(Modifier.weight(1f))
                 SnackbarHost(
                     hostState = snackbarHostState,
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .padding(horizontal = Dimensions.screenPaddingHorizontal)
                         .padding(bottom = bottomPadding)
@@ -125,6 +128,7 @@ fun MainScreen(
                 AnimatedNavigationBar(
                     selectedIndex = selectedIndex,
                     onTabSelected = { index ->
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         when (index) {
                             0 -> {
                                 navController.navigate(Screen.Inbox.route) {
@@ -152,6 +156,7 @@ fun MainScreen(
                 currentDestination?.route == Screen.All.route) {
                 FloatingActionButton(
                     onClick = {
+                        haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         navController.navigate(Screen.AddEdit.createRoute(null))
                     },
                     containerColor = MaterialTheme.colorScheme.primary
@@ -183,7 +188,7 @@ fun AnimatedNavigationBar(
 ) {
     val tabs = listOf(
         TabItem("Inbox", Icons.Default.Home),
-        TabItem("All", Icons.Default.List),
+        TabItem("All", Icons.AutoMirrored.Filled.List),
         TabItem("Settings", Icons.Default.Settings)
     )
     

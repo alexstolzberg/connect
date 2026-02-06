@@ -18,7 +18,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -273,7 +273,7 @@ fun AddEditScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -543,7 +543,7 @@ fun AddEditScreen(
                                     }
                                 }
                                 
-                                Divider(modifier = Modifier.padding(vertical = Dimensions.inlineSpacing))
+                                HorizontalDivider(modifier = Modifier.padding(vertical = Dimensions.inlineSpacing))
                                 
                                 Text(
                                     text = "Choose Avatar Color",

@@ -8,18 +8,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Snooze
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -54,6 +56,7 @@ fun ConnectionDetailsScreen(
     val uiState by viewModel.uiState.collectAsState()
     val deleteResult by viewModel.deleteResult.collectAsState()
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
     val lifecycleOwner = LocalLifecycleOwner.current
     
     // Refresh when screen resumes (comes back from edit screen)
@@ -103,7 +106,7 @@ fun ConnectionDetailsScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -264,7 +267,7 @@ fun ConnectionDetailsScreen(
                                 )
                             }
                             
-                            Divider()
+                            HorizontalDivider()
                             
                             InfoRow(
                                 "Frequency", 
@@ -346,7 +349,7 @@ fun ConnectionDetailsScreen(
                                 )
                             }
                             if (connection.birthday != null) {
-                                Divider()
+                                HorizontalDivider()
                                 InfoRow(
                                     "Birthday",
                                     dateFormat.format(connection.birthday),
@@ -354,7 +357,7 @@ fun ConnectionDetailsScreen(
                                 )
                             }
                             if (connection.notes != null && connection.notes.isNotBlank()) {
-                                Divider()
+                                HorizontalDivider()
                                 Text(
                                     text = "Notes",
                                     style = MaterialTheme.typography.labelLarge,
@@ -392,7 +395,7 @@ fun ConnectionDetailsScreen(
                         ) {
                             ConnectPrimaryButton(
                                 onClick = { ContactHelper.sendMessage(context, connection.contactPhoneNumber) },
-                                leadingIcon = Icons.Default.Send
+                                leadingIcon = Icons.AutoMirrored.Filled.Send
                             ) {
                                 Text("Message")
                             }
@@ -413,6 +416,7 @@ fun ConnectionDetailsScreen(
                     if (connection.isDueToday) {
                         ConnectPrimaryButton(
                             onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                                 viewModel.markAsContacted()
                                 onShowSnackbar("Marked as contacted")
                             },
